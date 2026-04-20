@@ -78,12 +78,63 @@ export interface GetLawTextResponse extends ToolResponseBase<GetLawTextInput> {
   citation: string;
 }
 
+export interface SearchBillInput {
+  bill_no?: string;
+  bill_name?: string;
+  proposer?: string;
+  committee?: string;
+  age?: string;
+  limit?: number;
+}
+
+export interface SearchBillItem {
+  bill_no: string;
+  bill_id: string | null;
+  bill_name: string;
+  proposer: string | null;
+  committee: string | null;
+  status: string | null;
+  proposed_date: string | null;
+  age: string | null;
+  original_url: string;
+}
+
+export interface SearchBillResponse extends ToolResponseBase<SearchBillInput> {
+  items: SearchBillItem[];
+}
+
+export interface GetBillDetailInput {
+  bill_no?: string;
+  bill_id?: string;
+}
+
+export interface BillTimelineStep {
+  stage: string;
+  date: string | null;
+  result: string | null;
+  note?: string | null;
+}
+
+export interface GetBillDetailResponse extends ToolResponseBase<GetBillDetailInput> {
+  bill_no: string;
+  bill_id: string;
+  bill_name: string;
+  summary_text: string | null;
+  timeline: BillTimelineStep[];
+  plenary_result: string | null;
+}
+
 export interface BundleConfig {
   law: {
     oc: string;
     searchBaseUrl: string;
     serviceBaseUrl: string;
     detailBaseUrl: string;
+  };
+  assembly: {
+    apiKey: string;
+    baseUrl: string;
+    defaultAge: string;
   };
 }
 

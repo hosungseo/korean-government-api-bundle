@@ -8,6 +8,12 @@ export function buildLawCitation(lawName: string, articleRef?: string | null): s
   return articleRef ? `${lawName} ${articleRef}` : `${lawName} 전문`;
 }
 
+export function buildBillIdentifier(billId: string | null, billNo: string | null): string {
+  if (billId) return `bill:id:${billId}`;
+  if (billNo) return `bill:no:${billNo}`;
+  return "bill:search";
+}
+
 export function nowIso(): string {
   return new Date().toISOString();
 }

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { getBillDetailTool, searchBillTool } from "../mcp/tools/assembly.js";
 import { getLawTextTool, searchLawTool } from "../mcp/tools/law.js";
 
 function printUsage(): void {
@@ -8,6 +9,10 @@ function printUsage(): void {
   kgab search_law <query> [--limit N]
   kgab get-law-text --mst <MST> [--article 제1조]
   kgab get-law-text --law-name <법령명> [--article 제1조]
+  kgab search-bill --bill-no <의안번호>
+  kgab search-bill --bill-name <의안명> [--committee <위원회>] [--age <제22대>] [--limit N]
+  kgab get-bill-detail --bill-no <의안번호>
+  kgab get-bill-detail --bill-id <BILL_ID>
   kgab mcp --list-tools
   kgab mcp run <tool_name> '<json>'`);
 }
@@ -71,6 +76,26 @@ async function main(): Promise<void> {
     const lawName = parseOption(rest, "--law-name");
     const articleRef = parseOption(rest, "--article");
     const result = await getLawTextTool({ mst, law_name: lawName, article_ref: articleRef });
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  if (command === "search-bill" || command === "search_bill") {
+    const limit = parseLimit(rest);
+    const billNo = parseOption(rest, "--bill-no");
+    const billName = parseOption(rest, "--bill-name");
+    const proposer = parseOption(rest, "--proposer");
+    const committee = parseOption(rest, "--committee");
+    const age = parseOption(rest, "--age");
+    const result = await searchBillTool({ bill_no: billNo, bill_name: billName, proposer, committee, age, limit });
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  if (command === "get-bill-detail" || command === "get_bill_detail") {
+    const billNo = parseOption(rest, "--bill-no");
+    const billId = parseOption(rest, "--bill-id");
+    const result = await getBillDetailTool({ bill_no: billNo, bill_id: billId });
     console.log(JSON.stringify(result, null, 2));
     return;
   }

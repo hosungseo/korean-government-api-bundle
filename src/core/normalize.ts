@@ -49,3 +49,12 @@ export function normalizeArticleRef(articleRef: string | undefined): string | nu
 
   return trimmed;
 }
+
+export function normalizeAgeLabel(age: string | undefined): string | null {
+  if (!age) return null;
+  const trimmed = normalizeQueryText(age);
+  if (!trimmed) return null;
+  const digits = trimmed.replace(/\D/g, "");
+  if (!digits) return trimmed;
+  return trimmed.includes("대") ? `제${digits}대` : `제${digits}대`;
+}

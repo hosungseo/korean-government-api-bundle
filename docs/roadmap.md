@@ -8,12 +8,10 @@
 - config loader 추가 완료
 - 법제처 adapter 기반 `search_law` 구현 완료
 - `law_name → MST resolve → lawService` 흐름의 `get_law_text` 구현 완료
+- 열린국회정보 기반 `search_bill` 구현 완료
+- `bill_no → BILL_ID resolve → BILLINFODETAIL + BPMBILLSUMMARY` 흐름의 `get_bill_detail` 구현 완료
 
 ## 다음 구현 순서
-### Phase 2
-- `search_bill`
-- `get_bill_detail`
-
 ### Phase 3
 - `search_stat_series`
 - `get_stat_series`
