@@ -5,6 +5,7 @@
 - MVP 문서화 완료
 - source registry / matching rules / tool-provider mapping 정리 완료
 - bundle-level `resolve_source_bundle` 구현 완료
+- `resolve_source_bundle` argument auto-fill (`suggested_input`, `missing_required_fields`, `suggested_cli`) 구현 완료
 - provider registry 코드화 완료
 - config loader 추가 완료
 - 법제처 adapter 기반 `search_law` 구현 완료
@@ -25,7 +26,7 @@
 
 ## 다음 구현 순서
 ### Phase 4
-- `resolve_source_bundle`를 tool argument suggestion / disambiguation 질문까지 확장
+- `resolve_source_bundle`를 disambiguation 질문 / multi-step handoff까지 확장
 - 관보 detail / personnel 특화 API 확장
 - 입법예고/행정예고 attachment 및 section parser 정교화
 - KOSIS `getMeta(type=ITM)` 기반 catalog 자동 생성/보강

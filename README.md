@@ -44,6 +44,7 @@
 ```bash
 kgab resolve-source-bundle "2207018 법안 상태"
 kgab resolve-source-bundle "행정안전부 입법예고"
+kgab resolve-source-bundle "행정기본법 제1조"
 kgab resolve-source-bundle "기준금리와 주택담보대출금리 비교 ecos:722Y001:0101000 ecos:121Y006:BECBLA01"
 kgab search-law "행정기본법" --limit 3
 kgab get-law-text --law-name 행정기본법 --article 제1조
@@ -84,6 +85,7 @@ kgab get-dataset-metadata --dataset-id 15108065
 - 모든 응답은 **source-first**
 - 자연어 요약 + structured payload 동시 제공
 - 원문 URL, identifier, fetched_at 포함
+- `resolve_source_bundle`는 recommendation뿐 아니라 **suggested_input / missing_required_fields / suggested_cli**까지 반환
 - compare / verify 계열 도구로 확장 가능, 현재 `compare_stat_series` 1차 구현 포함
 
 ## Docs
@@ -116,7 +118,7 @@ src/
 초기 설계 단계에서 **첫 working slice**까지 진입했습니다.
 
 현재 구현된 것:
-1. bundle-level `resolve_source_bundle` 구현
+1. bundle-level `resolve_source_bundle` 구현 + argument auto-fill (`suggested_input`, `missing_required_fields`, `suggested_cli`)
 2. provider registry 코드화
 3. config loader 추가
 4. law/bill/stat resolver 골격 추가
@@ -138,7 +140,7 @@ src/
 3. MCP + CLI tool surface
 
 현재 남은 우선순위는 다음과 같습니다.
-1. `resolve_source_bundle`를 tool argument suggestion까지 확장
+1. `resolve_source_bundle`에 disambiguation question / multi-step handoff까지 붙이기
 2. KOSIS coverage를 curated catalog에서 자동 catalog/metadata 기반으로 더 넓히기
 3. 공공데이터포털 상세 메타데이터 필드를 더 구조화
 4. 국민참여입법센터 detail parser를 section-aware summary/attachment 중심으로 더 정교화

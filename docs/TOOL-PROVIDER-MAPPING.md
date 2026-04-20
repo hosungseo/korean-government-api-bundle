@@ -20,11 +20,13 @@
 1. query normalization
 2. identifier / keyword / fallback 기반 intent 분류
 3. provider scoring
-4. recommended tool + alternatives 반환
+4. recommended tool 결정
+5. tool별 suggested input auto-fill
+6. missing required field와 CLI template 반환
 
 ### notes
 - 실제 외부 API 호출 전의 pre-routing surface
-- 현재는 tool/provider recommendation 중심, 이후 tool argument suggestion으로 확장 가능
+- recommendation뿐 아니라 실행 직전 입력 shape까지 함께 제안
 
 ---
 

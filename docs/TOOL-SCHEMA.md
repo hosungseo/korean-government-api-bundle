@@ -18,6 +18,9 @@
 - `recommended_tool`
 - `reasoning`
 - `entities[]`
+- `suggested_input`
+- `missing_required_fields[]`
+- `suggested_cli`
 - `alternatives[]`
 
 ---

@@ -236,6 +236,8 @@ export interface BundleResolvedEntity {
   value: string;
 }
 
+export type BundleSuggestedInputValue = string | number | boolean | null;
+
 export interface ResolveSourceBundleResponse extends ToolResponseBase<ResolveSourceBundleInput> {
   intent: BundleIntent;
   recommended_provider_id: string;
@@ -243,6 +245,9 @@ export interface ResolveSourceBundleResponse extends ToolResponseBase<ResolveSou
   recommended_tool: string;
   reasoning: string;
   entities: BundleResolvedEntity[];
+  suggested_input: Record<string, BundleSuggestedInputValue>;
+  missing_required_fields: string[];
+  suggested_cli: string | null;
 }
 
 export interface SearchStatSeriesInput {

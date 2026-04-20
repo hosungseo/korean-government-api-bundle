@@ -1,5 +1,6 @@
-import { normalizeAgeLabel, normalizeQueryText } from "./normalize.js";
+import { normalizeAgeLabel, normalizeArticleRef, normalizeQueryText } from "./normalize.js";
 import type {
+  BundleSuggestedInputValue,
   IntentResolution,
   ResolveSourceBundleInput,
   SearchBillInput,
@@ -16,6 +17,18 @@ const datasetKeywordPattern = /(데이터셋|공공데이터포털|오픈api|ope
 const statKeywordPattern = /(통계|시계열|기준금리|금리|cpi|소비자물가|총인구|세대수|kosis|ecos)/i;
 const compareKeywordPattern = /(비교|격차|차이|비율|ratio|spread)/i;
 const statIdentifierPattern = /(ecos|kosis):[A-Za-z0-9_:-]+/g;
+const agencyNamePattern = /([가-힣A-Za-z0-9·]+(?:부|청|처|위원회|교육청|검찰청|법원|국회|원))/g;
+const lawNamePattern = /([가-힣A-Za-z0-9·]+(?:법|시행령|시행규칙))/;
+
+type BundleResolutionResult = {
+  resolution: IntentResolution;
+  recommendedTool: string;
+  reasoning: string;
+  entities: Array<{ label: string; value: string }>;
+  suggestedInput: Record<string, BundleSuggestedInputValue>;
+  missingRequiredFields: string[];
+  suggestedCli: string | null;
+};
 
 function resolveCompareProviderId(statIdentifiers: string[]): "ecos" | "kosis" {
   if (statIdentifiers.length === 0) {
@@ -33,6 +46,221 @@ function resolveCompareProviderId(statIdentifiers: string[]): "ecos" | "kosis" {
   }
 
   return "ecos";
+}
+
+function quoteCliValue(value: string): string {
+  return /\s/.test(value) ? JSON.stringify(value) : value;
+}
+
+function buildCliSuggestion(
+  toolName: string,
+  suggestedInput: Record<string, BundleSuggestedInputValue>,
+  missingRequiredFields: string[]
+): string | null {
+  const missing = new Set(missingRequiredFields);
+
+  switch (toolName) {
+    case "search_law": {
+      const query = suggestedInput.query;
+      if (typeof query !== "string" || !query.trim()) return null;
+      return `kgab search-law ${quoteCliValue(query)}`;
+    }
+    case "get_law_text": {
+      const parts = ["kgab get-law-text"];
+      if (typeof suggestedInput.mst === "string" && suggestedInput.mst) parts.push(`--mst ${quoteCliValue(suggestedInput.mst)}`);
+      else if (typeof suggestedInput.law_name === "string" && suggestedInput.law_name) parts.push(`--law-name ${quoteCliValue(suggestedInput.law_name)}`);
+      else if (missing.has("mst") && missing.has("law_name")) parts.push("--mst <MST>");
+      if (typeof suggestedInput.article_ref === "string" && suggestedInput.article_ref) parts.push(`--article ${quoteCliValue(suggestedInput.article_ref)}`);
+      return parts.join(" ");
+    }
+    case "search_bill": {
+      const parts = ["kgab search-bill"];
+      if (typeof suggestedInput.bill_no === "string" && suggestedInput.bill_no) parts.push(`--bill-no ${quoteCliValue(suggestedInput.bill_no)}`);
+      else if (typeof suggestedInput.bill_name === "string" && suggestedInput.bill_name) parts.push(`--bill-name ${quoteCliValue(suggestedInput.bill_name)}`);
+      else if (missing.has("bill_no") && missing.has("bill_name")) parts.push("--bill-no <의안번호>");
+      return parts.join(" ");
+    }
+    case "search_lawmaking_items": {
+      const parts = ["kgab search-lawmaking-items"];
+      if (typeof suggestedInput.category === "string" && suggestedInput.category) parts.push(`--category ${suggestedInput.category}`);
+      else if (missing.has("category")) parts.push("--category <gov-status|plan|notice|notice-mod|admin-notice|interpretation|example>");
+      if (typeof suggestedInput.agency_name === "string" && suggestedInput.agency_name) parts.push(`--agency-name ${quoteCliValue(suggestedInput.agency_name)}`);
+      if (typeof suggestedInput.query === "string" && suggestedInput.query) parts.push(`--query ${quoteCliValue(suggestedInput.query)}`);
+      return parts.join(" ");
+    }
+    case "search_gazette_items": {
+      const parts = ["kgab search-gazette-items"];
+      if (typeof suggestedInput.query === "string" && suggestedInput.query) parts.push(`--query ${quoteCliValue(suggestedInput.query)}`);
+      if (typeof suggestedInput.agency_name === "string" && suggestedInput.agency_name) parts.push(`--agency-name ${quoteCliValue(suggestedInput.agency_name)}`);
+      if (typeof suggestedInput.law_name === "string" && suggestedInput.law_name) parts.push(`--law-name ${quoteCliValue(suggestedInput.law_name)}`);
+      if (typeof suggestedInput.start_date === "string" && suggestedInput.start_date) parts.push(`--start-date ${quoteCliValue(suggestedInput.start_date)}`);
+      if (typeof suggestedInput.end_date === "string" && suggestedInput.end_date) parts.push(`--end-date ${quoteCliValue(suggestedInput.end_date)}`);
+      return parts.join(" ");
+    }
+    case "search_stat_series": {
+      const query = suggestedInput.query;
+      if (typeof query !== "string" || !query.trim()) return null;
+      const parts = ["kgab search-stat-series", quoteCliValue(query)];
+      if (typeof suggestedInput.source === "string" && suggestedInput.source) parts.push(`--source ${suggestedInput.source}`);
+      return parts.join(" ");
+    }
+    case "compare_stat_series": {
+      const parts = ["kgab compare-stat-series"];
+      if (typeof suggestedInput.series_a_identifier === "string" && suggestedInput.series_a_identifier) parts.push(`--id-a ${quoteCliValue(suggestedInput.series_a_identifier)}`);
+      else if (missing.has("series_a_identifier")) parts.push("--id-a <IDENTIFIER>");
+      if (typeof suggestedInput.series_b_identifier === "string" && suggestedInput.series_b_identifier) parts.push(`--id-b ${quoteCliValue(suggestedInput.series_b_identifier)}`);
+      else if (missing.has("series_b_identifier")) parts.push("--id-b <IDENTIFIER>");
+      if (typeof suggestedInput.start === "string" && suggestedInput.start) parts.push(`--start ${quoteCliValue(suggestedInput.start)}`);
+      else if (missing.has("start")) parts.push("--start <YYYYMM>");
+      if (typeof suggestedInput.end === "string" && suggestedInput.end) parts.push(`--end ${quoteCliValue(suggestedInput.end)}`);
+      else if (missing.has("end")) parts.push("--end <YYYYMM>");
+      return parts.join(" ");
+    }
+    case "search_public_dataset": {
+      const query = suggestedInput.query;
+      if (typeof query !== "string" || !query.trim()) return null;
+      return `kgab search-public-dataset ${quoteCliValue(query)}`;
+    }
+    default:
+      return null;
+  }
+}
+
+function removeTokens(input: string, tokens: Array<string | undefined | null>): string {
+  return tokens
+    .filter((token): token is string => typeof token === "string" && token.trim().length > 0)
+    .reduce((acc, token) => acc.replace(token, " "), input)
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function extractArticleRef(input: string): string | null {
+  const articleMatch = input.match(/제\s*\d+\s*조/);
+  return normalizeArticleRef(articleMatch?.[0]);
+}
+
+function extractAgencyName(input: string): string | null {
+  const matches = [...input.matchAll(agencyNamePattern)].map((match) => match[1]);
+  if (matches.length === 0) return null;
+  return matches.sort((left, right) => right.length - left.length)[0] ?? null;
+}
+
+function extractLawName(input: string): string | null {
+  const match = input.match(lawNamePattern);
+  return match?.[1] ?? null;
+}
+
+function detectLawmakingCategory(input: string): string {
+  if (/법령해석례/.test(input)) return "interpretation";
+  if (/의견제시사례/.test(input)) return "example";
+  if (/행정예고/.test(input)) return "admin-notice";
+  if (/입법계획/.test(input)) return "plan";
+  if (/입법예고.*변경|변경.*입법예고|notice-mod/i.test(input)) return "notice-mod";
+  if (/입법예고/.test(input)) return "notice";
+  return "gov-status";
+}
+
+function extractPeriodRange(input: string): { start?: string; end?: string } {
+  const rangeMatch = input.match(/\b(20\d{2}(?:\d{2})?)\s*(?:~|부터|-|–)\s*(20\d{2}(?:\d{2})?)\b/);
+  if (!rangeMatch) {
+    return {};
+  }
+
+  return {
+    start: rangeMatch[1],
+    end: rangeMatch[2]
+  };
+}
+
+function buildSuggestion(
+  recommendedTool: string,
+  input: ResolveSourceBundleInput,
+  normalized: string,
+  resolution: IntentResolution,
+  entities: Array<{ label: string; value: string }>
+): { suggestedInput: Record<string, BundleSuggestedInputValue>; missingRequiredFields: string[]; suggestedCli: string | null } {
+  const suggestedInput: Record<string, BundleSuggestedInputValue> = {};
+  const missingRequiredFields: string[] = [];
+  const billNo = entities.find((entity) => entity.label === "bill_no")?.value;
+  const mst = entities.find((entity) => entity.label === "mst")?.value;
+  const statIdentifiers = entities.filter((entity) => entity.label === "stat_identifier").map((entity) => entity.value);
+  const agencyName = extractAgencyName(normalized);
+  const articleRef = extractArticleRef(normalized);
+  const lawName = extractLawName(normalized);
+  const { start, end } = extractPeriodRange(normalized);
+
+  switch (recommendedTool) {
+    case "search_bill": {
+      if (billNo) {
+        suggestedInput.bill_no = billNo;
+      } else {
+        const billName = removeTokens(normalized, [agencyName, articleRef]);
+        if (billName) suggestedInput.bill_name = billName;
+        else missingRequiredFields.push("bill_no", "bill_name");
+      }
+      break;
+    }
+    case "get_law_text": {
+      if (mst) suggestedInput.mst = mst;
+      if (!mst && lawName) suggestedInput.law_name = lawName;
+      if (!mst && !lawName) {
+        missingRequiredFields.push("mst", "law_name");
+      }
+      if (articleRef) suggestedInput.article_ref = articleRef;
+      break;
+    }
+    case "search_lawmaking_items": {
+      suggestedInput.category = detectLawmakingCategory(normalized);
+      if (agencyName) suggestedInput.agency_name = agencyName;
+      const query = removeTokens(normalized, [agencyName, "입법현황", "입법예고", "행정예고", "법령해석례", "의견제시사례", "입법계획", "법제처심사", "추진현황"]);
+      if (query) suggestedInput.query = query;
+      break;
+    }
+    case "search_gazette_items": {
+      if (agencyName) suggestedInput.agency_name = agencyName;
+      if (lawName) suggestedInput.law_name = lawName;
+      if (start) suggestedInput.start_date = start;
+      if (end) suggestedInput.end_date = end;
+      const query = removeTokens(normalized, [agencyName, lawName, "관보", "정호", "호외", "고시", "공고", "훈령", "예규", start, end]);
+      if (query) suggestedInput.query = query;
+      break;
+    }
+    case "search_stat_series": {
+      suggestedInput.source = resolution.providerId === "kosis" ? "kosis" : resolution.providerId === "ecos" ? "ecos" : "all";
+      const query = removeTokens(normalized, ["통계", "시계열", "kosis", "ecos"]);
+      suggestedInput.query = query || input.query;
+      break;
+    }
+    case "compare_stat_series": {
+      if (statIdentifiers[0]) suggestedInput.series_a_identifier = statIdentifiers[0];
+      else missingRequiredFields.push("series_a_identifier");
+      if (statIdentifiers[1]) suggestedInput.series_b_identifier = statIdentifiers[1];
+      else missingRequiredFields.push("series_b_identifier");
+      if (start) suggestedInput.start = start;
+      else missingRequiredFields.push("start");
+      if (end) suggestedInput.end = end;
+      else missingRequiredFields.push("end");
+      break;
+    }
+    case "search_public_dataset": {
+      const query = removeTokens(normalized, ["데이터셋", "공공데이터포털", "오픈api", "openapi", "api 목록", "dataset"]);
+      suggestedInput.query = query || input.query;
+      break;
+    }
+    case "search_law": {
+      const query = removeTokens(normalized, [articleRef]);
+      suggestedInput.query = query || input.query;
+      break;
+    }
+    default:
+      break;
+  }
+
+  return {
+    suggestedInput,
+    missingRequiredFields,
+    suggestedCli: buildCliSuggestion(recommendedTool, suggestedInput, missingRequiredFields)
+  };
 }
 
 export function resolveSearchLawIntent(input: SearchLawInput): IntentResolution {
@@ -135,12 +363,7 @@ export function resolveSearchStatIntent(input: SearchStatSeriesInput): IntentRes
   };
 }
 
-export function resolveSourceBundle(input: ResolveSourceBundleInput): {
-  resolution: IntentResolution;
-  recommendedTool: string;
-  reasoning: string;
-  entities: Array<{ label: string; value: string }>;
-} {
+export function resolveSourceBundle(input: ResolveSourceBundleInput): BundleResolutionResult {
   const normalized = normalizeQueryText(input.query);
   const statIdentifiers = normalized.match(statIdentifierPattern) ?? [];
   const normalizedWithoutStatIdentifiers = statIdentifiers.reduce((acc, identifier) => acc.replace(identifier, " "), normalized);
@@ -161,61 +384,53 @@ export function resolveSourceBundle(input: ResolveSourceBundleInput): {
   }
 
   if (statIdentifiers.length >= 2 || (compareKeywordPattern.test(normalized) && statIdentifiers.length >= 1)) {
-    const compareProviderId = resolveCompareProviderId(statIdentifiers);
-
-    return {
-      resolution: {
-        intent: "stat-compare",
-        providerId: compareProviderId,
-        matchedBy: "identifier",
-        confidence: statIdentifiers.length >= 2 ? 0.97 : 0.82,
-        alternatives: [
-          {
-            provider: "KOSIS 국가통계포털",
-            tool: "search_stat_series",
-            reason: "비교할 identifier가 아직 하나뿐이면 KOSIS/ECOS에서 상대 시계열을 먼저 찾는 흐름이 자연스럽습니다."
-          }
-        ]
-      },
-      recommendedTool: "compare_stat_series",
-      reasoning: "통계 identifier 또는 비교 표현이 보여 compare_stat_series로 바로 라우팅하는 것이 가장 적절합니다.",
-      entities
+    const resolution: IntentResolution = {
+      intent: "stat-compare",
+      providerId: resolveCompareProviderId(statIdentifiers),
+      matchedBy: "identifier",
+      confidence: statIdentifiers.length >= 2 ? 0.97 : 0.82,
+      alternatives: [
+        {
+          provider: "KOSIS 국가통계포털",
+          tool: "search_stat_series",
+          reason: "비교할 identifier가 아직 하나뿐이면 KOSIS/ECOS에서 상대 시계열을 먼저 찾는 흐름이 자연스럽습니다."
+        }
+      ]
     };
+    const recommendedTool = "compare_stat_series";
+    const reasoning = "통계 identifier 또는 비교 표현이 보여 compare_stat_series로 바로 라우팅하는 것이 가장 적절합니다.";
+    return { resolution, recommendedTool, reasoning, entities, ...buildSuggestion(recommendedTool, input, normalized, resolution, entities) };
   }
 
   if (numericBill) {
-    return {
-      resolution: {
-        intent: "bill-search",
-        providerId: "assembly_openapi",
-        matchedBy: "identifier",
-        confidence: 0.99,
-        alternatives: [
-          {
-            provider: "법제처 국가법령정보",
-            tool: "search_law",
-            reason: "숫자열이 법안번호가 아니라면 법령 검색으로 돌아갈 수 있습니다."
-          }
-        ]
-      },
-      recommendedTool: "search_bill",
-      reasoning: "7~8자리 숫자 패턴이 의안번호와 강하게 일치합니다.",
-      entities
+    const resolution: IntentResolution = {
+      intent: "bill-search",
+      providerId: "assembly_openapi",
+      matchedBy: "identifier",
+      confidence: 0.99,
+      alternatives: [
+        {
+          provider: "법제처 국가법령정보",
+          tool: "search_law",
+          reason: "숫자열이 법안번호가 아니라면 법령 검색으로 돌아갈 수 있습니다."
+        }
+      ]
     };
+    const recommendedTool = "search_bill";
+    const reasoning = "7~8자리 숫자 패턴이 의안번호와 강하게 일치합니다.";
+    return { resolution, recommendedTool, reasoning, entities, ...buildSuggestion(recommendedTool, input, normalized, resolution, entities) };
   }
 
   if (mst) {
-    return {
-      resolution: {
-        intent: "law-text",
-        providerId: "law_go_kr",
-        matchedBy: "identifier",
-        confidence: 0.99
-      },
-      recommendedTool: "get_law_text",
-      reasoning: "MST 식별자가 명시되어 있어 법령 본문 조회로 바로 연결하는 것이 가장 정확합니다.",
-      entities
+    const resolution: IntentResolution = {
+      intent: "law-text",
+      providerId: "law_go_kr",
+      matchedBy: "identifier",
+      confidence: 0.99
     };
+    const recommendedTool = "get_law_text";
+    const reasoning = "MST 식별자가 명시되어 있어 법령 본문 조회로 바로 연결하는 것이 가장 정확합니다.";
+    return { resolution, recommendedTool, reasoning, entities, ...buildSuggestion(recommendedTool, input, normalized, resolution, entities) };
   }
 
   if (lawmakingKeywordPattern.test(normalized)) {
@@ -228,118 +443,105 @@ export function resolveSourceBundle(input: ResolveSourceBundleInput): {
       });
     }
 
-    return {
-      resolution: {
-        intent: "lawmaking-search",
-        providerId: "lawmaking_center",
-        matchedBy: "keyword",
-        confidence: 0.93,
-        alternatives
-      },
-      recommendedTool: "search_lawmaking_items",
-      reasoning: "입법현황/입법예고/행정예고/해석례 계열 어휘가 국민참여입법센터 surface와 가장 잘 맞습니다.",
-      entities
+    const resolution: IntentResolution = {
+      intent: "lawmaking-search",
+      providerId: "lawmaking_center",
+      matchedBy: "keyword",
+      confidence: 0.93,
+      alternatives
     };
+    const recommendedTool = "search_lawmaking_items";
+    const reasoning = "입법현황/입법예고/행정예고/해석례 계열 어휘가 국민참여입법센터 surface와 가장 잘 맞습니다.";
+    return { resolution, recommendedTool, reasoning, entities, ...buildSuggestion(recommendedTool, input, normalized, resolution, entities) };
   }
 
   if (gazetteKeywordPattern.test(normalized)) {
-    return {
-      resolution: {
-        intent: "gazette-search",
-        providerId: "mois_gazette",
-        matchedBy: "keyword",
-        confidence: 0.9,
-        alternatives: [
-          {
-            provider: "국민참여입법센터 정보공개활용",
-            tool: "search_lawmaking_items",
-            reason: "입법예고/행정예고가 핵심이면 국민참여입법센터 검색이 더 구조적일 수 있습니다."
-          }
-        ]
-      },
-      recommendedTool: "search_gazette_items",
-      reasoning: "관보/정호/호외/고시/공고 계열 표현이 관보 metadata search와 직접 연결됩니다.",
-      entities
+    const resolution: IntentResolution = {
+      intent: "gazette-search",
+      providerId: "mois_gazette",
+      matchedBy: "keyword",
+      confidence: 0.9,
+      alternatives: [
+        {
+          provider: "국민참여입법센터 정보공개활용",
+          tool: "search_lawmaking_items",
+          reason: "입법예고/행정예고가 핵심이면 국민참여입법센터 검색이 더 구조적일 수 있습니다."
+        }
+      ]
     };
+    const recommendedTool = "search_gazette_items";
+    const reasoning = "관보/정호/호외/고시/공고 계열 표현이 관보 metadata search와 직접 연결됩니다.";
+    return { resolution, recommendedTool, reasoning, entities, ...buildSuggestion(recommendedTool, input, normalized, resolution, entities) };
   }
 
   if (datasetKeywordPattern.test(normalized)) {
-    return {
-      resolution: {
-        intent: "dataset-search",
-        providerId: "data_go_kr",
-        matchedBy: "keyword",
-        confidence: 0.9,
-        alternatives: [
-          {
-            provider: "KOSIS 국가통계포털",
-            tool: "search_stat_series",
-            reason: "질문이 데이터셋보다 바로 통계값 탐색이라면 KOSIS/ECOS가 더 빠를 수 있습니다."
-          }
-        ]
-      },
-      recommendedTool: "search_public_dataset",
-      reasoning: "데이터셋/API 카탈로그를 찾는 표현이 보여 공공데이터포털 metadata search가 가장 적절합니다.",
-      entities
+    const resolution: IntentResolution = {
+      intent: "dataset-search",
+      providerId: "data_go_kr",
+      matchedBy: "keyword",
+      confidence: 0.9,
+      alternatives: [
+        {
+          provider: "KOSIS 국가통계포털",
+          tool: "search_stat_series",
+          reason: "질문이 데이터셋보다 바로 통계값 탐색이라면 KOSIS/ECOS가 더 빠를 수 있습니다."
+        }
+      ]
     };
+    const recommendedTool = "search_public_dataset";
+    const reasoning = "데이터셋/API 카탈로그를 찾는 표현이 보여 공공데이터포털 metadata search가 가장 적절합니다.";
+    return { resolution, recommendedTool, reasoning, entities, ...buildSuggestion(recommendedTool, input, normalized, resolution, entities) };
   }
 
   if (statKeywordPattern.test(normalized)) {
-    const statResolution = resolveSearchStatIntent({ query: normalized, source: "all" });
-    return {
-      resolution: statResolution,
-      recommendedTool: "search_stat_series",
-      reasoning: statResolution.providerId === "ecos"
-        ? "금융·거시계열 어휘가 강해서 ECOS 우선 탐색이 적절합니다."
-        : "국가통계/인구 계열 표현이 보여 통계 series 검색으로 라우팅합니다.",
-      entities
-    };
+    const resolution = resolveSearchStatIntent({ query: normalized, source: "all" });
+    const recommendedTool = "search_stat_series";
+    const reasoning = resolution.providerId === "ecos"
+      ? "금융·거시계열 어휘가 강해서 ECOS 우선 탐색이 적절합니다."
+      : "국가통계/인구 계열 표현이 보여 통계 series 검색으로 라우팅합니다.";
+    return { resolution, recommendedTool, reasoning, entities, ...buildSuggestion(recommendedTool, input, normalized, resolution, entities) };
   }
 
   if (lawKeywordPattern.test(normalized)) {
-    return {
-      resolution: {
-        intent: "law-search",
-        providerId: "law_go_kr",
-        matchedBy: "keyword",
-        confidence: 0.9,
-        alternatives: [
-          {
-            provider: "열린국회정보",
-            tool: "search_bill",
-            reason: "법률안 단계인지 현행 법령인지 애매하면 법안 검색도 대안이 됩니다."
-          }
-        ]
-      },
-      recommendedTool: /제\d+조/.test(normalized) ? "get_law_text" : "search_law",
-      reasoning: /제\d+조/.test(normalized)
-        ? "조문 표현이 있어 법령 본문 조회로 바로 가는 것이 적절합니다."
-        : "법령/시행령/조문 계열 표현이 법제처 search surface와 가장 잘 맞습니다.",
-      entities
-    };
-  }
-
-  return {
-    resolution: {
-      intent: "law-search",
+    const recommendedTool = /제\s*\d+\s*조/.test(normalized) ? "get_law_text" : "search_law";
+    const resolution: IntentResolution = {
+      intent: recommendedTool === "get_law_text" ? "law-text" : "law-search",
       providerId: "law_go_kr",
-      matchedBy: "fallback",
-      confidence: 0.45,
+      matchedBy: "keyword",
+      confidence: 0.9,
       alternatives: [
         {
           provider: "열린국회정보",
           tool: "search_bill",
-          reason: "질문이 법안 단계일 수 있습니다."
-        },
-        {
-          provider: "공공데이터포털",
-          tool: "search_public_dataset",
-          reason: "질문이 데이터 source 탐색일 수도 있습니다."
+          reason: "법률안 단계인지 현행 법령인지 애매하면 법안 검색도 대안이 됩니다."
         }
       ]
-    },
-    recommendedTool: "search_law",
-    reasoning: "명시적 식별자가 부족해 기본 법령 검색 surface를 fallback으로 제안합니다.",
-    entities
+    };
+    const reasoning = recommendedTool === "get_law_text"
+      ? "조문 표현이 있어 법령 본문 조회로 바로 가는 것이 적절합니다."
+      : "법령/시행령/조문 계열 표현이 법제처 search surface와 가장 잘 맞습니다.";
+    return { resolution, recommendedTool, reasoning, entities, ...buildSuggestion(recommendedTool, input, normalized, resolution, entities) };
+  }
+
+  const resolution: IntentResolution = {
+    intent: "law-search",
+    providerId: "law_go_kr",
+    matchedBy: "fallback",
+    confidence: 0.45,
+    alternatives: [
+      {
+        provider: "열린국회정보",
+        tool: "search_bill",
+        reason: "질문이 법안 단계일 수 있습니다."
+      },
+      {
+        provider: "공공데이터포털",
+        tool: "search_public_dataset",
+        reason: "질문이 데이터 source 탐색일 수도 있습니다."
+      }
+    ]
   };
+  const recommendedTool = "search_law";
+  const reasoning = "명시적 식별자가 부족해 기본 법령 검색 surface를 fallback으로 제안합니다.";
+  return { resolution, recommendedTool, reasoning, entities, ...buildSuggestion(recommendedTool, input, normalized, resolution, entities) };
 }

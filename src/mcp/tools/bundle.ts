@@ -25,7 +25,7 @@ export async function resolveSourceBundleTool(input: ResolveSourceBundleInput): 
     throw new InputError("query is required for resolve_source_bundle");
   }
 
-  const { resolution, recommendedTool, reasoning, entities } = resolveSourceBundle(input);
+  const { resolution, recommendedTool, reasoning, entities, suggestedInput, missingRequiredFields, suggestedCli } = resolveSourceBundle(input);
   const provider = getProviderById(resolution.providerId);
   const providerName = provider?.providerName ?? resolution.providerId;
 
@@ -46,6 +46,9 @@ export async function resolveSourceBundleTool(input: ResolveSourceBundleInput): 
     recommended_provider: providerName,
     recommended_tool: recommendedTool,
     reasoning,
-    entities
+    entities,
+    suggested_input: suggestedInput,
+    missing_required_fields: missingRequiredFields,
+    suggested_cli: suggestedCli
   };
 }

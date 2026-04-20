@@ -178,12 +178,17 @@ provider 고유 어휘를 보면 추가 가중치
 - route:
   - 7~8자리 숫자 + 법안 표현 → `search_bill`
   - `MST=` 식별자 → `get_law_text`
+  - `행정기본법 제1조` 같은 법령명 + 조문 표현 → `get_law_text`
   - 입법현황/입법예고/행정예고/해석례 → `search_lawmaking_items`
   - 관보/정호/호외/고시/공고 → `search_gazette_items`
   - 통계 identifier 2개 이상 또는 비교 표현 + identifier → `compare_stat_series`
   - 통계/시계열 어휘 → `search_stat_series`
   - 데이터셋/API catalog 어휘 → `search_public_dataset`
   - 그 외는 `search_law` fallback
+- auto-fill:
+  - 가능한 경우 `suggested_input`에 tool 입력 shape를 함께 채운다
+  - 아직 부족한 필수값은 `missing_required_fields`에 남긴다
+  - CLI 호출용 `suggested_cli` template도 함께 반환한다
 
 ### `search_stat_series`
 - primary providers: ECOS, KOSIS
