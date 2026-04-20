@@ -81,6 +81,57 @@ function stripMarkup(input: string | null | undefined): string | null {
   return normalized || null;
 }
 
+function htmlToReadableText(input: string | null | undefined): string | null {
+  if (!input) return null;
+  const normalized = decodeXmlEntities(input)
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<\/div>/gi, "\n")
+    .replace(/<\/li>/gi, "\n")
+    .replace(/<\/h\d>/gi, "\n")
+    .replace(/<li[^>]*>/gi, "- ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\r/g, "")
+    .replace(/\n\s+/g, "\n")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+
+  return normalized || null;
+}
+
+function extractSectionedSummary(text: string | null, preferredHeadings: string[]): { summary: string | null; body: string | null } {
+  if (!text) return { summary: null, body: null };
+
+  const lines = text.split("\n").map((line) => line.trim()).filter(Boolean);
+  const sections: Array<{ heading: string; content: string[] }> = [];
+  let current: { heading: string; content: string[] } | null = null;
+
+  for (const line of lines) {
+    if (/^(\d+\.|[가-하]\.|[A-Z]\.|\[.*\])\s*.+/.test(line)) {
+      current = { heading: line, content: [] };
+      sections.push(current);
+      continue;
+    }
+
+    if (!current) {
+      current = { heading: "본문", content: [] };
+      sections.push(current);
+    }
+
+    current.content.push(line);
+  }
+
+  const preferred = sections.find((section) => preferredHeadings.some((heading) => section.heading.includes(heading)) && section.content.length > 0);
+  const summary = preferred?.content.slice(0, 4).join(" ") ?? sections.find((section) => section.content.length > 0)?.content.slice(0, 4).join(" ") ?? null;
+  const body = sections
+    .map((section) => [section.heading === "본문" ? null : section.heading, ...section.content].filter(Boolean).join("\n"))
+    .filter(Boolean)
+    .join("\n\n");
+
+  return { summary, body: body || text };
+}
+
 function normalizeDateParam(value: string | undefined): string | null {
   if (!value?.trim()) return null;
   const digits = value.replace(/\D/g, "");
@@ -213,7 +264,12 @@ function parseAttachmentsFromHtml(html: string | null | undefined): LawmakingAtt
       url: decodeXmlEntities(match[1]),
       name: stripXmlTags(match[2]) || decodeXmlEntities(match[1])
     }))
-    .filter((item) => item.url);
+    .filter((item) => {
+      if (!item.url) return false;
+      if (/^https?:\/\/(opinion\.lawmaking\.go\.kr|www\.mois\.go\.kr)\/?$/i.test(item.url)) return false;
+      if (/^https?:\/\/(opinion\.lawmaking\.go\.kr|www\.mois\.go\.kr)\/?$/i.test(item.name)) return false;
+      return true;
+    });
 }
 
 function mapGovStatusListItem(block: string, config: BundleConfig): LawmakingListItem {
@@ -468,7 +524,8 @@ function parsePlanDetail(block: string): LawmakingDetailResult {
 
 function parseNoticeDetail(block: string): LawmakingDetailResult {
   const rawBody = extractTag(block, "lmPpCts");
-  const bodyText = stripMarkup(rawBody);
+  const readableText = htmlToReadableText(rawBody);
+  const structured = extractSectionedSummary(readableText, ["제정이유", "개정이유", "주요내용"]);
   return {
     category: "notice",
     itemId: extractTag(block, "ogLmPpSeq") ?? "",
@@ -481,8 +538,8 @@ function parseNoticeDetail(block: string): LawmakingDetailResult {
     revisionType: extractTag(block, "lmTpNm"),
     status: null,
     date: normalizeDate(extractTag(block, "stYd")),
-    summaryText: bodyText ? bodyText.slice(0, 500) : null,
-    bodyText,
+    summaryText: structured.summary,
+    bodyText: structured.body,
     fields: uniqueFields([
       makeField("공고기관", extractTag(block, "asndOfiNm")),
       makeField("담당부서", extractTag(block, "asndDptNm")),
@@ -510,7 +567,8 @@ function parseNoticeModDetail(block: string): LawmakingDetailResult {
 
 function parseAdminNoticeDetail(block: string): LawmakingDetailResult {
   const rawBody = extractTag(block, "admPpCts");
-  const bodyText = stripMarkup(rawBody);
+  const readableText = htmlToReadableText(rawBody);
+  const structured = extractSectionedSummary(readableText, ["제정이유", "개정이유", "주요내용"]);
   return {
     category: "admin-notice",
     itemId: extractTag(block, "ogAdmPpSeq") ?? "",
@@ -523,8 +581,8 @@ function parseAdminNoticeDetail(block: string): LawmakingDetailResult {
     revisionType: extractTag(block, "lmTpNm"),
     status: null,
     date: normalizeDate(extractTag(block, "stYd")),
-    summaryText: bodyText ? bodyText.slice(0, 500) : null,
-    bodyText,
+    summaryText: structured.summary,
+    bodyText: structured.body,
     fields: uniqueFields([
       makeField("공고기관", extractTag(block, "asndOfiNm")),
       makeField("행정규칙형태", extractTag(block, "lmTpNm")),
@@ -548,6 +606,7 @@ function parseInterpretationDetail(block: string): LawmakingDetailResult {
     }))
     .filter((section) => section.content);
   const answer = sections.find((section) => section.title === "회답")?.content ?? null;
+  const conciseAnswer = answer?.split(/\n+/).map((line) => line.trim()).filter(Boolean).slice(0, 3).join(" ") ?? null;
   return {
     category: "interpretation",
     itemId: "",
@@ -560,7 +619,7 @@ function parseInterpretationDetail(block: string): LawmakingDetailResult {
     revisionType: null,
     status: extractTag(block, "tgLsNm"),
     date: normalizeDate(extractTag(block, "rpldocSndDay")),
-    summaryText: answer,
+    summaryText: conciseAnswer,
     bodyText: sections.map((section) => `${section.title}\n${section.content}`).join("\n\n"),
     fields: uniqueFields([
       makeField("해석례 번호", extractTag(block, "itmNo")),
@@ -581,6 +640,7 @@ function parseExampleDetail(block: string): LawmakingDetailResult {
     }))
     .filter((section) => section.content);
   const answer = sections.find((section) => section.title === "의견")?.content ?? null;
+  const conciseAnswer = answer?.split(/\n+/).map((line) => line.trim()).filter(Boolean).slice(0, 3).join(" ") ?? null;
   return {
     category: "example",
     itemId: "",
@@ -593,7 +653,7 @@ function parseExampleDetail(block: string): LawmakingDetailResult {
     revisionType: null,
     status: null,
     date: normalizeDate(extractTag(block, "cdtDt")),
-    summaryText: answer,
+    summaryText: conciseAnswer,
     bodyText: sections.map((section) => `${section.title}\n${section.content}`).join("\n\n"),
     fields: uniqueFields([
       makeField("사례번호", extractTag(block, "caseNo")),
