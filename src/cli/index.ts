@@ -16,7 +16,7 @@ function printUsage(): void {
   kgab get-bill-detail --bill-no <의안번호>
   kgab get-bill-detail --bill-id <BILL_ID>
   kgab search-stat-series <query> [--source ecos|kosis|all] [--limit N]
-  kgab get-stat-series --source ecos --table <STAT_CODE> [--item <ITEM_CODE>] --start YYYYMM --end YYYYMM
+  kgab get-stat-series --source ecos|kosis --table <STAT_CODE> [--item <ITEM_CODE>] [--org <ORG_ID>] [--obj-l1 <CODE>] [--obj-l2 <CODE>] [--obj-l3 <CODE>] --start YYYYMM --end YYYYMM
   kgab search-public-dataset <query> [--limit N]
   kgab get-dataset-metadata --dataset-id <ID>
   kgab mcp --list-tools
@@ -120,9 +120,23 @@ async function main(): Promise<void> {
     const source = (parseOption(rest, "--source") as "ecos" | "kosis" | undefined) ?? "ecos";
     const tableId = parseOption(rest, "--table");
     const itemCode = parseOption(rest, "--item");
+    const orgId = parseOption(rest, "--org");
+    const objL1 = parseOption(rest, "--obj-l1");
+    const objL2 = parseOption(rest, "--obj-l2");
+    const objL3 = parseOption(rest, "--obj-l3");
     const start = parseOption(rest, "--start");
     const end = parseOption(rest, "--end");
-    const result = await getStatSeriesTool({ source, table_id: tableId ?? "", item_code: itemCode, start: start ?? "", end: end ?? "" });
+    const result = await getStatSeriesTool({
+      source,
+      table_id: tableId ?? "",
+      item_code: itemCode,
+      org_id: orgId,
+      obj_l1: objL1,
+      obj_l2: objL2,
+      obj_l3: objL3,
+      start: start ?? "",
+      end: end ?? ""
+    });
     console.log(JSON.stringify(result, null, 2));
     return;
   }

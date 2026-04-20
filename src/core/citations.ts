@@ -14,8 +14,16 @@ export function buildBillIdentifier(billId: string | null, billNo: string | null
   return "bill:search";
 }
 
-export function buildStatIdentifier(source: string, tableId: string, itemCode?: string | null): string {
-  return itemCode ? `${source}:${tableId}:${itemCode}` : `${source}:${tableId}`;
+export function buildStatIdentifier(
+  source: string,
+  tableId: string,
+  itemCode?: string | null,
+  selectors: Array<string | null | undefined> = []
+): string {
+  const parts = [source, tableId];
+  if (itemCode) parts.push(itemCode);
+  parts.push(...selectors.filter((value): value is string => Boolean(value)));
+  return parts.join(":");
 }
 
 export function buildDatasetIdentifier(datasetId?: string | null, serviceId?: string | null): string {

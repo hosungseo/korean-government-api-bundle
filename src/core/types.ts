@@ -135,6 +135,10 @@ export interface SearchStatSeriesItem {
   series_name: string;
   table_id: string;
   item_code: string | null;
+  org_id?: string | null;
+  obj_l1?: string | null;
+  obj_l2?: string | null;
+  obj_l3?: string | null;
   unit: string | null;
   frequency: string | null;
   original_url: string;
@@ -148,6 +152,10 @@ export interface GetStatSeriesInput {
   source: "ecos" | "kosis";
   table_id: string;
   item_code?: string;
+  org_id?: string;
+  obj_l1?: string;
+  obj_l2?: string;
+  obj_l3?: string;
   start: string;
   end: string;
 }

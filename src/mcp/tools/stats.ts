@@ -34,8 +34,12 @@ export const statTools = [
         source: { type: "string", description: "ecos | kosis" },
         table_id: { type: "string", description: "통계표 코드" },
         item_code: { type: "string", description: "항목 코드" },
-        start: { type: "string", description: "시작 시점 YYYYMM" },
-        end: { type: "string", description: "종료 시점 YYYYMM" }
+        org_id: { type: "string", description: "KOSIS 기관 코드" },
+        obj_l1: { type: "string", description: "KOSIS 1차 분류 코드" },
+        obj_l2: { type: "string", description: "KOSIS 2차 분류 코드" },
+        obj_l3: { type: "string", description: "KOSIS 3차 분류 코드" },
+        start: { type: "string", description: "시작 시점 YYYYMM 또는 YYYY" },
+        end: { type: "string", description: "종료 시점 YYYYMM 또는 YYYY" }
       },
       required: ["source", "table_id", "start", "end"]
     }
@@ -58,7 +62,12 @@ export async function searchStatSeriesTool(input: SearchStatSeriesInput): Promis
     provider: resolution.providerId === "kosis" ? "KOSIS 국가통계포털" : "한국은행 ECOS",
     tool: "search_stat_series",
     query: input,
-    identifier: buildStatIdentifier(items[0]?.source ?? "ecos", items[0]?.table_id ?? "search", items[0]?.item_code),
+    identifier: buildStatIdentifier(
+      items[0]?.source ?? "ecos",
+      items[0]?.table_id ?? "search",
+      items[0]?.item_code,
+      [items[0]?.obj_l1, items[0]?.obj_l2, items[0]?.obj_l3]
+    ),
     summary: items.length > 0 ? `${items.length}개 통계 시계열 후보를 찾았습니다.` : "일치하는 통계 시계열 후보를 찾지 못했습니다.",
     original_url: originalUrl,
     fetched_at: nowIso(),
@@ -84,7 +93,7 @@ export async function getStatSeriesTool(input: GetStatSeriesInput): Promise<GetS
     provider: input.source === "kosis" ? "KOSIS 국가통계포털" : "한국은행 ECOS",
     tool: "get_stat_series",
     query: input,
-    identifier: buildStatIdentifier(input.source, input.table_id, input.item_code),
+    identifier: buildStatIdentifier(input.source, input.table_id, input.item_code, [input.obj_l1, input.obj_l2, input.obj_l3]),
     summary: `${result.summary} 시계열을 가져왔습니다.`,
     original_url: result.originalUrl,
     fetched_at: nowIso(),
