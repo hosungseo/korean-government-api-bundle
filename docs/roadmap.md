@@ -13,6 +13,7 @@
 - 국민참여입법센터 기반 `search_lawmaking_items` 구현 완료
 - 국민참여입법센터 기반 `get_lawmaking_item_detail` 구현 완료
 - 국민참여입법센터 category coverage를 `notice-mod`, `admin-notice`, `interpretation`, `example`까지 확장 완료
+- 행정안전부 관보 API 기반 `search_gazette_items` 구현 완료
 - ECOS 기반 `search_stat_series` 구현 완료
 - ECOS 기반 `get_stat_series` 구현 완료
 - KOSIS demographic slice 확장 기반 `search_stat_series` 구현 완료
@@ -23,6 +24,7 @@
 
 ## 다음 구현 순서
 ### Phase 4
+- 관보 detail / personnel 특화 API 확장
 - 입법예고/행정예고 attachment 및 section parser 정교화
 - KOSIS `getMeta(type=ITM)` 기반 catalog 자동 생성/보강
 - KOSIS 지역/성별/연령 default slice를 더 넓은 curated set으로 확장

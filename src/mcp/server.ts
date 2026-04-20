@@ -1,10 +1,11 @@
 import { getLawTextTool, searchLawTool, lawTools } from "./tools/law.js";
 import { assemblyTools, getBillDetailTool, searchBillTool } from "./tools/assembly.js";
 import { getLawmakingItemDetailTool, lawmakingTools, searchLawmakingItemsTool } from "./tools/lawmaking.js";
+import { gazetteTools, searchGazetteItemsTool } from "./tools/gazette.js";
 import { compareStatSeriesTool, getStatSeriesTool, searchStatSeriesTool, statTools } from "./tools/stats.js";
 import { datasetTools, getDatasetMetadataTool, searchPublicDatasetTool } from "./tools/dataset.js";
 
-export const toolCatalog = [...lawTools, ...assemblyTools, ...lawmakingTools, ...statTools, ...datasetTools];
+export const toolCatalog = [...lawTools, ...assemblyTools, ...lawmakingTools, ...gazetteTools, ...statTools, ...datasetTools];
 
 export async function runTool(name: string, input: unknown): Promise<unknown> {
   switch (name) {
@@ -20,6 +21,8 @@ export async function runTool(name: string, input: unknown): Promise<unknown> {
       return searchLawmakingItemsTool(input as { category: "gov-status" | "plan" | "notice" | "notice-mod" | "admin-notice" | "interpretation" | "example"; agency_code?: string; agency_name?: string; law_kind_code?: string; status_code?: string; year?: string; start_date?: string; end_date?: string; query?: string; query_field?: string; limit?: number });
     case "get_lawmaking_item_detail":
       return getLawmakingItemDetailTool(input as { category: "gov-status" | "plan" | "notice" | "notice-mod" | "admin-notice" | "interpretation" | "example"; item_id: string; mapping_id?: string; announce_type?: string });
+    case "search_gazette_items":
+      return searchGazetteItemsTool(input as { query?: string; agency_name?: string; law_name?: string; start_date?: string; end_date?: string; limit?: number });
     case "search_stat_series":
       return searchStatSeriesTool(input as { query: string; source?: "ecos" | "kosis" | "all"; limit?: number });
     case "get_stat_series":

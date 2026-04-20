@@ -138,7 +138,29 @@
 
 ---
 
-## 7. `search_stat_series`
+## 7. `search_gazette_items`
+
+### external tool purpose
+- 관보 공고/고시/입법예고 항목 검색
+
+### internal providers
+- 행정안전부 관보 API
+
+### internal endpoints
+- `ApiTotalService/getApiTotalList`
+
+### orchestration
+1. `query`, `agency_name`, `law_name`, `start_date`, `end_date`를 관보 검색 파라미터로 변환
+2. `search` / `pblcnSearch` / `lawNmSearch` 조합으로 official metadata 조회
+3. `pdfFilePath`를 `https://gwanbo.go.kr` 기준 absolute URL로 정규화
+
+### notes
+- 현 단계는 metadata search slice 우선
+- detail/personal-appointment 특화 API는 다음 확장 범위
+
+---
+
+## 8. `search_stat_series`
 
 ### external tool purpose
 - 통계 시계열 후보 검색
@@ -154,7 +176,7 @@
 
 ---
 
-## 8. `get_stat_series`
+## 9. `get_stat_series`
 
 ### external tool purpose
 - 특정 통계 시계열 값 조회
@@ -173,7 +195,7 @@
 
 ---
 
-## 9. `compare_stat_series`
+## 10. `compare_stat_series`
 
 ### external tool purpose
 - 두 통계 시계열을 공통 시점으로 정렬해 차이와 비율을 비교
@@ -195,7 +217,7 @@
 
 ---
 
-## 10. `search_public_dataset`
+## 11. `search_public_dataset`
 
 ### external tool purpose
 - 공공데이터포털 데이터셋 검색
@@ -211,7 +233,7 @@
 
 ---
 
-## 11. `get_dataset_metadata`
+## 12. `get_dataset_metadata`
 
 ### external tool purpose
 - 특정 데이터셋 메타데이터 상세 조회
@@ -244,6 +266,11 @@
 - category-specific compare / watch tools
 - attachment-first parser for 예고문 원문 파일
 - notice/example summarization hardening
+
+### gazette extension
+- `get_gazette_item_detail`
+- 관보 인사발령 특화 search tool
+- PDF/HTML readable extraction layer
 
 ### cross-source extension
 - `resolve_source_bundle`

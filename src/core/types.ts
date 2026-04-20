@@ -5,6 +5,7 @@ export type BundleIntent =
   | "bill-detail"
   | "lawmaking-search"
   | "lawmaking-detail"
+  | "gazette-search"
   | "stat-search"
   | "stat-series"
   | "stat-compare"
@@ -200,6 +201,32 @@ export interface GetLawmakingItemDetailResponse extends ToolResponseBase<GetLawm
   attachments: LawmakingAttachment[];
 }
 
+export interface SearchGazetteItemsInput {
+  query?: string;
+  agency_name?: string;
+  law_name?: string;
+  start_date?: string;
+  end_date?: string;
+  limit?: number;
+}
+
+export interface GazetteListItem {
+  item_id: string;
+  title: string;
+  publication_date: string | null;
+  publication_agency: string | null;
+  gazette_book: string | null;
+  document_type: string | null;
+  basis_law: string | null;
+  is_correction: boolean;
+  pdf_url: string | null;
+  original_url: string;
+}
+
+export interface SearchGazetteItemsResponse extends ToolResponseBase<SearchGazetteItemsInput> {
+  items: GazetteListItem[];
+}
+
 export interface SearchStatSeriesInput {
   query: string;
   source?: "ecos" | "kosis" | "all";
@@ -327,6 +354,11 @@ export interface BundleConfig {
   lawmaking: {
     oc: string;
     baseUrl: string;
+  };
+  gazette: {
+    apiKey: string;
+    baseUrl: string;
+    siteBaseUrl: string;
   };
   assembly: {
     apiKey: string;

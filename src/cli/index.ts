@@ -4,6 +4,7 @@ import { getBillDetailTool, searchBillTool } from "../mcp/tools/assembly.js";
 import { getDatasetMetadataTool, searchPublicDatasetTool } from "../mcp/tools/dataset.js";
 import { getLawTextTool, searchLawTool } from "../mcp/tools/law.js";
 import { getLawmakingItemDetailTool, searchLawmakingItemsTool } from "../mcp/tools/lawmaking.js";
+import { searchGazetteItemsTool } from "../mcp/tools/gazette.js";
 import { compareStatSeriesTool, getStatSeriesTool, searchStatSeriesTool } from "../mcp/tools/stats.js";
 
 function printUsage(): void {
@@ -18,6 +19,7 @@ function printUsage(): void {
   kgab get-bill-detail --bill-id <BILL_ID>
   kgab search-lawmaking-items --category <gov-status|plan|notice|notice-mod|admin-notice|interpretation|example> [--agency-code <코드>] [--agency-name <기관명>] [--law-kind-code <코드>] [--status-code <코드>] [--year YYYY] [--start-date YYYY-MM-DD] [--end-date YYYY-MM-DD] [--query <검색어>] [--query-field <필드>] [--limit N]
   kgab get-lawmaking-item-detail --category <gov-status|plan|notice|notice-mod|admin-notice|interpretation|example> --item-id <ID> [--mapping-id <ID>] [--announce-type TYPE5]
+  kgab search-gazette-items [--query <검색어>] [--agency-name <기관명>] [--law-name <근거법령명>] [--start-date YYYY-MM-DD] [--end-date YYYY-MM-DD] [--limit N]
   kgab search-stat-series <query> [--source ecos|kosis|all] [--limit N]
   kgab get-stat-series --source ecos|kosis --table <STAT_CODE> [--item <ITEM_CODE>] [--org <ORG_ID>] [--obj-l1 <CODE>] [--obj-l2 <CODE>] [--obj-l3 <CODE>] --start YYYYMM --end YYYYMM
   kgab compare-stat-series --id-a <IDENTIFIER> --id-b <IDENTIFIER> [--label-a <이름>] [--label-b <이름>] [--org-a <ORG_ID>] [--org-b <ORG_ID>] --start YYYYMM --end YYYYMM
@@ -149,6 +151,25 @@ async function main(): Promise<void> {
       item_id: itemId ?? "",
       mapping_id: mappingId,
       announce_type: announceType
+    });
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  if (command === "search-gazette-items" || command === "search_gazette_items") {
+    const query = parseOption(rest, "--query");
+    const agencyName = parseOption(rest, "--agency-name");
+    const lawName = parseOption(rest, "--law-name");
+    const startDate = parseOption(rest, "--start-date");
+    const endDate = parseOption(rest, "--end-date");
+    const limit = parseLimit(rest);
+    const result = await searchGazetteItemsTool({
+      query,
+      agency_name: agencyName,
+      law_name: lawName,
+      start_date: startDate,
+      end_date: endDate,
+      limit
     });
     console.log(JSON.stringify(result, null, 2));
     return;

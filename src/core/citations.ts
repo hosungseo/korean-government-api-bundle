@@ -26,6 +26,10 @@ export function buildLawmakingIdentifier(
   return parts.join(":");
 }
 
+export function buildGazetteIdentifier(itemId: string | null): string {
+  return itemId ? `gazette:item:${itemId}` : "gazette:search";
+}
+
 export function buildStatIdentifier(
   source: string,
   tableId: string,

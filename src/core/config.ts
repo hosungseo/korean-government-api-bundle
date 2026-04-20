@@ -12,6 +12,11 @@ export function loadConfig(): BundleConfig {
       oc: process.env.LAWMAKING_OC ?? "",
       baseUrl: process.env.LAWMAKING_API_BASE_URL ?? "https://www.lawmaking.go.kr/rest"
     },
+    gazette: {
+      apiKey: process.env.GAZETTE_SERVICE_KEY ?? process.env.GAZETTE_API_KEY ?? "",
+      baseUrl: process.env.GAZETTE_API_BASE_URL ?? "https://apis.data.go.kr/1741000/ApiTotalService/getApiTotalList",
+      siteBaseUrl: process.env.GAZETTE_SITE_BASE_URL ?? "https://gwanbo.go.kr"
+    },
     assembly: {
       apiKey: process.env.ASSEMBLY_API_KEY ?? "",
       baseUrl: process.env.ASSEMBLY_API_BASE_URL ?? "https://open.assembly.go.kr/portal/openapi",

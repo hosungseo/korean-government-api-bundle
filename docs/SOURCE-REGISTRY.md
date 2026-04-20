@@ -81,7 +81,20 @@
   - category-specific compare/watch tools
   - digest / summarization helpers
 
-### 4. 한국은행 ECOS
+### 4. 행정안전부 관보 API
+- role: 관보 공고/고시/입법예고 metadata 검색
+- connected scope:
+  - `ApiTotalService/getApiTotalList`
+- primary intents:
+  - gazette-search
+- planned tools:
+  - `search_gazette_items`
+- future expansion:
+  - `ApiPersonnelService/getApiPersonnelList`
+  - 관보 detail / readable extraction
+  - 인사발령 특화 search/detail
+
+### 5. 한국은행 ECOS
 - role: 경제통계 시계열 조회
 - connected scope:
   - `StatisticSearch`
@@ -93,7 +106,7 @@
   - `search_stat_series`
   - `get_stat_series`
 
-### 5. KOSIS 국가통계포털
+### 6. KOSIS 국가통계포털
 - role: 국가통계 시계열 / 항목 기반 조회
 - connected scope:
   - 국가통계포털 OpenAPI 전반
@@ -104,7 +117,7 @@
   - `search_stat_series`
   - `get_stat_series`
 
-### 6. 공공데이터포털
+### 7. 공공데이터포털
 - role: 데이터셋 메타데이터 / API 제공 여부 / 형식 식별
 - connected scope:
   - dataset metadata / catalog 계열
@@ -127,7 +140,6 @@
 - 정책브리핑 정책뉴스 API
 
 ### 행안부 / 정부24 / 분류체계
-- 행안부 관보 API
 - 행안부 관보 인사 API
 - 행안부 주민등록 인구 및 세대현황 API
 - 행안부 정부 목적별 분류체계 API

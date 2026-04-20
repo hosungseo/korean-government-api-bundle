@@ -22,6 +22,10 @@
   - `interpretation`
   - `example`
 
+### 행정안전부 관보 API
+- role: 관보 공고/고시/입법예고 metadata 검색
+- planned tools: `search_gazette_items`
+
 ### ECOS
 - role: 경제통계 시계열 조회 및 비교 입력 후보 제공
 - planned tools: `search_stat_series`, `get_stat_series`

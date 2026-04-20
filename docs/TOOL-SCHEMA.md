@@ -133,7 +133,30 @@
 
 ---
 
-## 7. search_stat_series
+## 7. search_gazette_items
+### input
+- `query?: string`
+- `agency_name?: string`
+- `law_name?: string`
+- `start_date?: string`
+- `end_date?: string`
+- `limit?: number`
+
+### output
+- `items[].item_id`
+- `items[].title`
+- `items[].publication_date`
+- `items[].publication_agency`
+- `items[].gazette_book`
+- `items[].document_type`
+- `items[].basis_law`
+- `items[].is_correction`
+- `items[].pdf_url`
+- `items[].original_url`
+
+---
+
+## 8. search_stat_series
 ### input
 - `query: string`
 - `source?: "ecos" | "kosis" | "all"`
@@ -150,7 +173,7 @@
 
 ---
 
-## 8. get_stat_series
+## 9. get_stat_series
 ### input
 - `source: "ecos" | "kosis"`
 - `table_id: string`
@@ -173,7 +196,7 @@
 
 ---
 
-## 9. compare_stat_series
+## 10. compare_stat_series
 ### input
 - `series_a_identifier: string`
 - `series_b_identifier: string`
@@ -203,7 +226,7 @@
 
 ---
 
-## 10. search_public_dataset
+## 11. search_public_dataset
 ### input
 - `query: string`
 - `limit?: number`
@@ -218,7 +241,7 @@
 
 ---
 
-## 11. get_dataset_metadata
+## 12. get_dataset_metadata
 ### input
 - `dataset_id?: string`
 - `service_id?: string`

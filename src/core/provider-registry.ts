@@ -44,6 +44,20 @@ export const providerRegistry: ProviderRegistryEntry[] = [
     status: "mvp"
   },
   {
+    providerId: "mois_gazette",
+    providerName: "행정안전부 관보 API",
+    domain: "records",
+    sourceType: "gazette",
+    supportedIntents: ["gazette-search"],
+    keyEndpoints: ["ApiTotalService/getApiTotalList"],
+    inputEntities: ["query", "agency_name", "law_name", "start_date", "end_date"],
+    responseShape: "gazette metadata list / pdf link",
+    freshnessModel: "official gazette metadata response at request time",
+    originalUrlPattern: "https://apis.data.go.kr/1741000/ApiTotalService/*",
+    priority: 92,
+    status: "expansion"
+  },
+  {
     providerId: "ecos",
     providerName: "한국은행 ECOS",
     domain: "stats",
