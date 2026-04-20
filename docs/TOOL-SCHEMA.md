@@ -173,7 +173,37 @@
 
 ---
 
-## 9. search_public_dataset
+## 9. compare_stat_series
+### input
+- `series_a_identifier: string`
+- `series_b_identifier: string`
+- `series_a_label?: string`
+- `series_b_label?: string`
+- `series_a_org_id?: string`
+- `series_b_org_id?: string`
+- `start: string`
+- `end: string`
+
+### output
+- `series_a_identifier`
+- `series_b_identifier`
+- `series_a_label`
+- `series_b_label`
+- `series_a_original_url`
+- `series_b_original_url`
+- `series_a_unit`
+- `series_b_unit`
+- `series_a_frequency`
+- `series_b_frequency`
+- `overlap_count`
+- `latest_time`
+- `latest_difference`
+- `latest_ratio`
+- `points[]`
+
+---
+
+## 10. search_public_dataset
 ### input
 - `query: string`
 - `limit?: number`
@@ -188,7 +218,7 @@
 
 ---
 
-## 10. get_dataset_metadata
+## 11. get_dataset_metadata
 ### input
 - `dataset_id?: string`
 - `service_id?: string`

@@ -23,12 +23,16 @@
   - `example`
 
 ### ECOS
-- role: 경제통계 시계열 조회
+- role: 경제통계 시계열 조회 및 비교 입력 후보 제공
 - planned tools: `search_stat_series`, `get_stat_series`
 
 ### KOSIS
-- role: 국가통계 시계열 및 항목 조회
+- role: 국가통계 시계열 및 항목 조회, 비교 입력 후보 제공
 - planned tools: `search_stat_series`, `get_stat_series`
+
+### bundle compare layer
+- role: 두 stat series를 공통 시점으로 정렬하고 차이/비율 계산
+- planned tools: `compare_stat_series`
 
 ### 공공데이터포털
 - role: 데이터셋 메타데이터 / API 제공 여부 / 형식 확인

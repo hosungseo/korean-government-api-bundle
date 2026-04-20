@@ -173,7 +173,29 @@
 
 ---
 
-## 9. `search_public_dataset`
+## 9. `compare_stat_series`
+
+### external tool purpose
+- 두 통계 시계열을 공통 시점으로 정렬해 차이와 비율을 비교
+
+### internal providers
+- ECOS
+- KOSIS
+- bundle compare layer
+
+### orchestration
+1. `series_a_identifier`, `series_b_identifier`를 파싱
+2. 각 identifier를 `get_stat_series` 입력 shape로 복원
+3. 각 source에서 시계열을 가져온 뒤 공통 시점으로 inner join
+4. `difference = B - A`, `ratio = B / A` 계산
+
+### notes
+- compare 계열 1차 구현은 stat surface부터 시작
+- KOSIS identifier만으로 `org_id`가 부족한 경우 override 필드 허용
+
+---
+
+## 10. `search_public_dataset`
 
 ### external tool purpose
 - 공공데이터포털 데이터셋 검색
@@ -189,7 +211,7 @@
 
 ---
 
-## 10. `get_dataset_metadata`
+## 11. `get_dataset_metadata`
 
 ### external tool purpose
 - 특정 데이터셋 메타데이터 상세 조회
@@ -205,7 +227,7 @@
 
 ---
 
-## 9. Future tool expansion candidates
+## 12. Future tool expansion candidates
 
 ### assembly extension
 - `search_member`
@@ -224,13 +246,12 @@
 - notice/example summarization hardening
 
 ### cross-source extension
-- `compare_stat_series`
 - `resolve_source_bundle`
 - `verify_citation`
 
 ---
 
-## 10. Design conclusion
+## 13. Design conclusion
 
 MCP tool은 적게 유지하고,
 내부에서는 여러 endpoint를 조합해 richer result를 반환하는 방향이 기본 원칙이다.

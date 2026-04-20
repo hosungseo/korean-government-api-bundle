@@ -32,6 +32,7 @@
 - `member-search`
 - `stat-search`
 - `stat-series`
+- `stat-compare`
 - `dataset-search`
 - `dataset-metadata`
 - `policy-news`
@@ -48,6 +49,7 @@
 - 국민참여입법센터 category / item_id / mapping_id / announce_type
 - 의원명 / 위원회명
 - 통계표코드 / 항목코드
+- stat series identifier 2개 이상
 - dataset id / service id
 - 기관명 / 지역명 / 날짜 범위
 
@@ -59,6 +61,7 @@ intent와 entity를 바탕으로 provider 후보를 점수화한다.
 - lawmaking category + item_id가 있으면 `국민참여입법센터` 점수 최상위
 - MST가 있으면 `법제처` 점수 최상위
 - table_id + item_code면 `ECOS` 또는 `KOSIS`
+- stat series identifier가 2개 있으면 `compare_stat_series`
 - dataset/service id면 `공공데이터포털`
 
 ### step 5. orchestration
@@ -93,6 +96,7 @@ intent와 entity를 바탕으로 provider 후보를 점수화한다.
 - 법안, 의안, 위원회 → assembly
 - 입법현황, 입법예고, 행정예고, 법령해석례, 의견제시사례 → lawmaking
 - 통계, 시계열, 금리, CPI → stats
+- 비교, 격차, 차이, 비율 + 통계 → stat-compare
 - 데이터셋, 공공데이터포털 → dataset
 
 ### provider-specific vocabulary
@@ -101,6 +105,7 @@ provider 고유 어휘를 보면 추가 가중치
 - `법제처심사`, `입법예고`, `행정예고`, `의견제시`, `해석례` → lawmaking
 - `공포`, `시행`, `조문` → law
 - `통계표코드`, `항목코드` → ecos/kosis
+- `비교`, `격차`, `차이`, `ratio`, `spread` → stat-compare
 
 ### ambiguity resolution
 하나의 질문이 여러 domain에 걸리면 다음 순서로 정리
@@ -167,6 +172,14 @@ provider 고유 어휘를 보면 추가 가중치
 - route:
   - explicit source 있으면 고정
   - source 없으면 identifier pattern으로 판별
+
+### `compare_stat_series`
+- primary providers: ECOS, KOSIS, bundle compare layer
+- route:
+  - `series_a_identifier`, `series_b_identifier` direct hit
+  - 각 identifier를 `get_stat_series` 입력 shape로 복원
+  - 공통 시점 inner join으로 비교
+  - `difference = B - A`, `ratio = B / A`
 
 ### `search_public_dataset`
 - primary provider: 공공데이터포털

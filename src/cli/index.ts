@@ -4,7 +4,7 @@ import { getBillDetailTool, searchBillTool } from "../mcp/tools/assembly.js";
 import { getDatasetMetadataTool, searchPublicDatasetTool } from "../mcp/tools/dataset.js";
 import { getLawTextTool, searchLawTool } from "../mcp/tools/law.js";
 import { getLawmakingItemDetailTool, searchLawmakingItemsTool } from "../mcp/tools/lawmaking.js";
-import { getStatSeriesTool, searchStatSeriesTool } from "../mcp/tools/stats.js";
+import { compareStatSeriesTool, getStatSeriesTool, searchStatSeriesTool } from "../mcp/tools/stats.js";
 
 function printUsage(): void {
   console.log(`Usage:
@@ -20,6 +20,7 @@ function printUsage(): void {
   kgab get-lawmaking-item-detail --category <gov-status|plan|notice|notice-mod|admin-notice|interpretation|example> --item-id <ID> [--mapping-id <ID>] [--announce-type TYPE5]
   kgab search-stat-series <query> [--source ecos|kosis|all] [--limit N]
   kgab get-stat-series --source ecos|kosis --table <STAT_CODE> [--item <ITEM_CODE>] [--org <ORG_ID>] [--obj-l1 <CODE>] [--obj-l2 <CODE>] [--obj-l3 <CODE>] --start YYYYMM --end YYYYMM
+  kgab compare-stat-series --id-a <IDENTIFIER> --id-b <IDENTIFIER> [--label-a <이름>] [--label-b <이름>] [--org-a <ORG_ID>] [--org-b <ORG_ID>] --start YYYYMM --end YYYYMM
   kgab search-public-dataset <query> [--limit N]
   kgab get-dataset-metadata --dataset-id <ID>
   kgab mcp --list-tools
@@ -159,6 +160,29 @@ async function main(): Promise<void> {
     const queryParts = rest.filter((arg, index) => !["--limit", "--source"].includes(arg) && !["--limit", "--source"].includes(rest[index - 1] ?? ""));
     const query = queryParts.join(" ").trim();
     const result = await searchStatSeriesTool({ query, source, limit });
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  if (command === "compare-stat-series" || command === "compare_stat_series") {
+    const seriesAIdentifier = parseOption(rest, "--id-a");
+    const seriesBIdentifier = parseOption(rest, "--id-b");
+    const seriesALabel = parseOption(rest, "--label-a");
+    const seriesBLabel = parseOption(rest, "--label-b");
+    const seriesAOrgId = parseOption(rest, "--org-a");
+    const seriesBOrgId = parseOption(rest, "--org-b");
+    const start = parseOption(rest, "--start");
+    const end = parseOption(rest, "--end");
+    const result = await compareStatSeriesTool({
+      series_a_identifier: seriesAIdentifier ?? "",
+      series_b_identifier: seriesBIdentifier ?? "",
+      series_a_label: seriesALabel,
+      series_b_label: seriesBLabel,
+      series_a_org_id: seriesAOrgId,
+      series_b_org_id: seriesBOrgId,
+      start: start ?? "",
+      end: end ?? ""
+    });
     console.log(JSON.stringify(result, null, 2));
     return;
   }

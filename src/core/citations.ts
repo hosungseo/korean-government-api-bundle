@@ -33,9 +33,17 @@ export function buildStatIdentifier(
   selectors: Array<string | null | undefined> = []
 ): string {
   const parts = [source, tableId];
-  if (itemCode) parts.push(itemCode);
+  if (itemCode) {
+    parts.push(itemCode);
+  } else if (selectors.some((value) => Boolean(value))) {
+    parts.push("_");
+  }
   parts.push(...selectors.filter((value): value is string => Boolean(value)));
   return parts.join(":");
+}
+
+export function buildStatCompareIdentifier(seriesAIdentifier: string, seriesBIdentifier: string): string {
+  return `compare:stat:${seriesAIdentifier}::${seriesBIdentifier}`;
 }
 
 export function buildDatasetIdentifier(datasetId?: string | null, serviceId?: string | null): string {

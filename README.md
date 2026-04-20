@@ -26,6 +26,7 @@
 | `get_lawmaking_item_detail` | 입법현황/입법계획/입법예고 상세 조회 | `LAWMAKING_OC` 필요 |
 | `search_stat_series` | ECOS/KOSIS 통계 시계열 후보 검색 | 불필요 |
 | `get_stat_series` | 특정 통계 시계열 값 조회 | 불필요 |
+| `compare_stat_series` | 두 통계 시계열을 같은 기간으로 정렬해 비교 | 불필요 |
 | `search_public_dataset` | 공공데이터포털 데이터셋 검색 | 불필요 |
 | `get_dataset_metadata` | 데이터셋 메타데이터 상세 조회 | 불필요 |
 
@@ -56,6 +57,7 @@ LAWMAKING_OC=hosung91 kgab search-lawmaking-items --category example --query 지
 LAWMAKING_OC=hosung91 kgab get-lawmaking-item-detail --category example --item-id 2026000014
 kgab search-stat-series 기준금리 --source ecos --limit 3
 kgab get-stat-series --source ecos --table 722Y001 --item 0101000 --start 202501 --end 202504
+kgab compare-stat-series --id-a ecos:722Y001:0101000 --label-a 기준금리 --id-b ecos:121Y006:BECBLA01 --label-b 주택담보대출금리 --start 202401 --end 202404
 kgab search-stat-series 총인구 --source kosis --limit 3
 kgab get-stat-series --source kosis --table DT_1IN1502 --start 2022 --end 2024
 KOSIS_API_KEY=your_key_here kgab get-stat-series --source kosis --table DT_1B040A3 --item T20 --obj-l1 36 --start 202401 --end 202403
@@ -74,7 +76,7 @@ kgab get-dataset-metadata --dataset-id 15108065
 - 모든 응답은 **source-first**
 - 자연어 요약 + structured payload 동시 제공
 - 원문 URL, identifier, fetched_at 포함
-- 추후 verify / compare 계열 도구 확장 가능
+- compare / verify 계열 도구로 확장 가능, 현재 `compare_stat_series` 1차 구현 포함
 
 ## Docs
 | 문서 | 설명 |
@@ -117,7 +119,8 @@ src/
 9. ECOS 기반 `search_stat_series` 구현
 10. ECOS 기반 `get_stat_series` 구현
 11. KOSIS demographic slice 확장 기반 `search_stat_series`, `get_stat_series` 구현
-12. 공공데이터포털 기반 `search_public_dataset`, `get_dataset_metadata` 구현
+12. `compare_stat_series` 구현
+13. 공공데이터포털 기반 `search_public_dataset`, `get_dataset_metadata` 구현
 
 현재 구조는 아래 3층을 기준으로 움직입니다.
 1. raw provider adapters
@@ -128,5 +131,5 @@ src/
 1. KOSIS coverage를 curated catalog에서 자동 catalog/metadata 기반으로 더 넓히기
 2. 공공데이터포털 상세 메타데이터 필드를 더 구조화
 3. 국민참여입법센터 detail parser를 section-aware summary/attachment 중심으로 더 정교화
-4. cross-source compare / verify 계열 도구 추가
+4. compare / verify 계열을 lawmaking / dataset 쪽으로 확장
 5. provider별 catalog 자동 생성/동기화

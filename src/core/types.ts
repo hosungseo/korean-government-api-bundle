@@ -7,6 +7,7 @@ export type BundleIntent =
   | "lawmaking-detail"
   | "stat-search"
   | "stat-series"
+  | "stat-compare"
   | "dataset-search"
   | "dataset-metadata";
 
@@ -245,6 +246,43 @@ export interface GetStatSeriesResponse extends ToolResponseBase<GetStatSeriesInp
   frequency: string | null;
   values: StatSeriesValue[];
   updated_at: string | null;
+}
+
+export interface CompareStatSeriesInput {
+  series_a_identifier: string;
+  series_b_identifier: string;
+  series_a_label?: string;
+  series_b_label?: string;
+  series_a_org_id?: string;
+  series_b_org_id?: string;
+  start: string;
+  end: string;
+}
+
+export interface CompareStatSeriesPoint {
+  time: string;
+  value_a: string;
+  value_b: string;
+  difference: number | null;
+  ratio: number | null;
+}
+
+export interface CompareStatSeriesResponse extends ToolResponseBase<CompareStatSeriesInput> {
+  series_a_identifier: string;
+  series_b_identifier: string;
+  series_a_label: string;
+  series_b_label: string;
+  series_a_original_url: string;
+  series_b_original_url: string;
+  series_a_unit: string | null;
+  series_b_unit: string | null;
+  series_a_frequency: string | null;
+  series_b_frequency: string | null;
+  overlap_count: number;
+  latest_time: string | null;
+  latest_difference: number | null;
+  latest_ratio: number | null;
+  points: CompareStatSeriesPoint[];
 }
 
 export interface SearchPublicDatasetInput {

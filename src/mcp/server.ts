@@ -1,7 +1,7 @@
 import { getLawTextTool, searchLawTool, lawTools } from "./tools/law.js";
 import { assemblyTools, getBillDetailTool, searchBillTool } from "./tools/assembly.js";
 import { getLawmakingItemDetailTool, lawmakingTools, searchLawmakingItemsTool } from "./tools/lawmaking.js";
-import { getStatSeriesTool, searchStatSeriesTool, statTools } from "./tools/stats.js";
+import { compareStatSeriesTool, getStatSeriesTool, searchStatSeriesTool, statTools } from "./tools/stats.js";
 import { datasetTools, getDatasetMetadataTool, searchPublicDatasetTool } from "./tools/dataset.js";
 
 export const toolCatalog = [...lawTools, ...assemblyTools, ...lawmakingTools, ...statTools, ...datasetTools];
@@ -23,7 +23,9 @@ export async function runTool(name: string, input: unknown): Promise<unknown> {
     case "search_stat_series":
       return searchStatSeriesTool(input as { query: string; source?: "ecos" | "kosis" | "all"; limit?: number });
     case "get_stat_series":
-      return getStatSeriesTool(input as { source: "ecos" | "kosis"; table_id: string; item_code?: string; start: string; end: string });
+      return getStatSeriesTool(input as { source: "ecos" | "kosis"; table_id: string; item_code?: string; org_id?: string; obj_l1?: string; obj_l2?: string; obj_l3?: string; start: string; end: string });
+    case "compare_stat_series":
+      return compareStatSeriesTool(input as { series_a_identifier: string; series_b_identifier: string; series_a_label?: string; series_b_label?: string; series_a_org_id?: string; series_b_org_id?: string; start: string; end: string });
     case "search_public_dataset":
       return searchPublicDatasetTool(input as { query: string; limit?: number });
     case "get_dataset_metadata":
