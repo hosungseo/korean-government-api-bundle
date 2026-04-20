@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { getBillDetailTool, searchBillTool } from "../mcp/tools/assembly.js";
+import { getDatasetMetadataTool, searchPublicDatasetTool } from "../mcp/tools/dataset.js";
 import { getLawTextTool, searchLawTool } from "../mcp/tools/law.js";
 import { getStatSeriesTool, searchStatSeriesTool } from "../mcp/tools/stats.js";
 
@@ -16,6 +17,8 @@ function printUsage(): void {
   kgab get-bill-detail --bill-id <BILL_ID>
   kgab search-stat-series <query> [--source ecos|kosis|all] [--limit N]
   kgab get-stat-series --source ecos --table <STAT_CODE> [--item <ITEM_CODE>] --start YYYYMM --end YYYYMM
+  kgab search-public-dataset <query> [--limit N]
+  kgab get-dataset-metadata --dataset-id <ID>
   kgab mcp --list-tools
   kgab mcp run <tool_name> '<json>'`);
 }
@@ -120,6 +123,23 @@ async function main(): Promise<void> {
     const start = parseOption(rest, "--start");
     const end = parseOption(rest, "--end");
     const result = await getStatSeriesTool({ source, table_id: tableId ?? "", item_code: itemCode, start: start ?? "", end: end ?? "" });
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  if (command === "search-public-dataset" || command === "search_public_dataset") {
+    const limit = parseLimit(rest);
+    const queryParts = rest.filter((arg, index) => !(arg === "--limit" || rest[index - 1] === "--limit"));
+    const query = queryParts.join(" ").trim();
+    const result = await searchPublicDatasetTool({ query, limit });
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  if (command === "get-dataset-metadata" || command === "get_dataset_metadata") {
+    const datasetId = parseOption(rest, "--dataset-id");
+    const serviceId = parseOption(rest, "--service-id");
+    const result = await getDatasetMetadataTool({ dataset_id: datasetId, service_id: serviceId });
     console.log(JSON.stringify(result, null, 2));
     return;
   }

@@ -21,6 +21,9 @@ export function loadConfig(): BundleConfig {
     kosis: {
       apiKey: process.env.KOSIS_API_KEY ?? "",
       baseUrl: process.env.KOSIS_API_BASE_URL ?? "https://kosis.kr/openapi"
+    },
+    dataGoKr: {
+      baseUrl: process.env.DATA_GO_KR_BASE_URL ?? "https://www.data.go.kr"
     }
   };
 }

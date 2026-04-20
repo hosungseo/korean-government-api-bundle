@@ -18,6 +18,12 @@ export function buildStatIdentifier(source: string, tableId: string, itemCode?: 
   return itemCode ? `${source}:${tableId}:${itemCode}` : `${source}:${tableId}`;
 }
 
+export function buildDatasetIdentifier(datasetId?: string | null, serviceId?: string | null): string {
+  if (datasetId) return `dataset:id:${datasetId}`;
+  if (serviceId) return `dataset:service:${serviceId}`;
+  return "dataset:search";
+}
+
 export function nowIso(): string {
   return new Date().toISOString();
 }

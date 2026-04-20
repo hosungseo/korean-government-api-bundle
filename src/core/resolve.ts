@@ -81,7 +81,7 @@ export function resolveSearchStatIntent(input: SearchStatSeriesInput): IntentRes
         {
           provider: "ECOS",
           tool: "search_stat_series",
-          reason: "현재 working slice는 ECOS 중심으로 먼저 구현되었습니다."
+          reason: "금융·거시계열은 ECOS가 더 직접적입니다. 인구·국가통계는 KOSIS를 우선 보세요."
         }
       ]
     };

@@ -41,13 +41,17 @@ kgab search-bill --bill-no 2207018
 kgab get-bill-detail --bill-no 2207018
 kgab search-stat-series 기준금리 --source ecos --limit 3
 kgab get-stat-series --source ecos --table 722Y001 --item 0101000 --start 202501 --end 202504
+kgab search-stat-series 총인구 --source kosis --limit 3
+kgab get-stat-series --source kosis --table DT_1IN1502 --start 2022 --end 2024
+kgab search-public-dataset 주민등록 인구 --limit 5
+kgab get-dataset-metadata --dataset-id 15108065
 ```
 
 ## 시작 순서
 1. 저장소 구조와 문서를 먼저 읽습니다.
 2. `docs/setup.md`와 `docs/security-and-secrets.md`를 확인합니다.
 3. provider registry와 matching 구조를 확인합니다.
-4. `kgab search-law "행정기본법" --limit 3`, `kgab get-law-text --law-name 행정기본법 --article 제1조`, `kgab search-bill --bill-no 2207018`, `kgab search-stat-series 기준금리 --source ecos --limit 3`로 working tool을 테스트합니다.
+4. `kgab search-law "행정기본법" --limit 3`, `kgab get-law-text --law-name 행정기본법 --article 제1조`, `kgab search-bill --bill-no 2207018`, `kgab search-stat-series 기준금리 --source ecos --limit 3`, `kgab search-public-dataset 주민등록 인구 --limit 5`로 working tool을 테스트합니다.
 
 ## Design principles
 - provider-first가 아니라 **question-first tools**
@@ -95,14 +99,16 @@ src/
 7. `bill_no → BILL_ID resolve → BILLINFODETAIL + BPMBILLSUMMARY` 흐름의 `get_bill_detail` 구현
 8. ECOS 기반 `search_stat_series` 구현
 9. ECOS 기반 `get_stat_series` 구현
+10. KOSIS 초기 demographic slice 기반 `search_stat_series`, `get_stat_series` 구현
+11. 공공데이터포털 기반 `search_public_dataset`, `get_dataset_metadata` 구현
 
 현재 구조는 아래 3층을 기준으로 움직입니다.
 1. raw provider adapters
 2. matching / routing / normalization layer
 3. MCP + CLI tool surface
 
-다음 구현 우선순위는 다음과 같습니다.
-1. KOSIS 기반 `search_stat_series` 확장
-2. KOSIS 기반 `get_stat_series` 확장
-3. `search_public_dataset`
-4. `get_dataset_metadata`
+현재 남은 우선순위는 다음과 같습니다.
+1. KOSIS coverage를 sample `userStatsId` 중심에서 더 넓은 표로 확장
+2. 공공데이터포털 상세 메타데이터 필드를 더 구조화
+3. cross-source compare / verify 계열 도구 추가
+4. provider별 catalog 자동 생성/동기화

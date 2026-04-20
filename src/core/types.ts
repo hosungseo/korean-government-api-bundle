@@ -164,6 +164,38 @@ export interface GetStatSeriesResponse extends ToolResponseBase<GetStatSeriesInp
   updated_at: string | null;
 }
 
+export interface SearchPublicDatasetInput {
+  query: string;
+  limit?: number;
+}
+
+export interface SearchPublicDatasetItem {
+  dataset_title: string;
+  provider: string | null;
+  dataset_id: string;
+  format: string | null;
+  has_api: boolean;
+  original_url: string;
+}
+
+export interface SearchPublicDatasetResponse extends ToolResponseBase<SearchPublicDatasetInput> {
+  items: SearchPublicDatasetItem[];
+}
+
+export interface GetDatasetMetadataInput {
+  dataset_id?: string;
+  service_id?: string;
+}
+
+export interface GetDatasetMetadataResponse extends ToolResponseBase<GetDatasetMetadataInput> {
+  title: string;
+  dataset_provider: string | null;
+  description: string | null;
+  format: string | null;
+  api_available: boolean;
+  download_count: string | null;
+}
+
 export interface BundleConfig {
   law: {
     oc: string;
@@ -183,6 +215,9 @@ export interface BundleConfig {
   };
   kosis: {
     apiKey: string;
+    baseUrl: string;
+  };
+  dataGoKr: {
     baseUrl: string;
   };
 }

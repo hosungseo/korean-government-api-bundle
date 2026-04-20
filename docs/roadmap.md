@@ -12,15 +12,19 @@
 - `bill_no → BILL_ID resolve → BILLINFODETAIL + BPMBILLSUMMARY` 흐름의 `get_bill_detail` 구현 완료
 - ECOS 기반 `search_stat_series` 구현 완료
 - ECOS 기반 `get_stat_series` 구현 완료
+- KOSIS 초기 demographic slice 기반 `search_stat_series` 구현 완료
+- KOSIS 초기 demographic slice 기반 `get_stat_series` 구현 완료
+- 공공데이터포털 기반 `search_public_dataset` 구현 완료
+- 공공데이터포털 기반 `get_dataset_metadata` 구현 완료
 
 ## 다음 구현 순서
 ### Phase 4
-- KOSIS 기반 `search_stat_series` 확장
-- KOSIS 기반 `get_stat_series` 확장
+- KOSIS `userStatsId` catalog 확대
+- KOSIS table-selection 방식(`orgId`/`tblId`/`objL*`/`itmId`) 지원
 
 ### Phase 5
-- `search_public_dataset`
-- `get_dataset_metadata`
+- 공공데이터포털 상세 메타데이터 필드 구조화 강화
+- dataset detail page parser 안정화 및 provider normalization
 
 ## 장기 확장
 - member / committee / meeting records 계열 국회 tool 추가

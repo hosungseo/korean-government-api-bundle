@@ -9,11 +9,12 @@ import type {
   SearchStatSeriesResponse
 } from "../../core/types.js";
 import { getStatSeriesProvider, searchStatSeriesProvider } from "../../providers/ecos/api.js";
+import { getKosisSeriesProvider, searchKosisSeriesProvider } from "../../providers/kosis/api.js";
 
 export const statTools = [
   {
     name: "search_stat_series",
-    description: "통계 주제로 시계열 후보를 찾습니다. 현재 working slice는 ECOS 중심입니다.",
+    description: "통계 주제로 시계열 후보를 찾습니다. ECOS 전체와 KOSIS 초기 demographic slice를 지원합니다.",
     inputSchema: {
       type: "object",
       properties: {
@@ -26,7 +27,7 @@ export const statTools = [
   },
   {
     name: "get_stat_series",
-    description: "특정 통계 시계열 값을 가져옵니다. 현재 working slice는 ECOS 중심입니다.",
+    description: "특정 통계 시계열 값을 가져옵니다. ECOS와 KOSIS 등록 slice를 지원합니다.",
     inputSchema: {
       type: "object",
       properties: {
@@ -48,7 +49,9 @@ export async function searchStatSeriesTool(input: SearchStatSeriesInput): Promis
 
   const config = loadConfig();
   const resolution = resolveSearchStatIntent(input);
-  const { items, originalUrl } = await searchStatSeriesProvider(input, config);
+  const { items, originalUrl } = resolution.providerId === "kosis"
+    ? await searchKosisSeriesProvider(input, config)
+    : await searchStatSeriesProvider(input, config);
 
   return {
     source: resolution.providerId === "kosis" ? "kosis" : "ecos",
@@ -72,7 +75,9 @@ export async function getStatSeriesTool(input: GetStatSeriesInput): Promise<GetS
   }
 
   const config = loadConfig();
-  const result = await getStatSeriesProvider(input, config);
+  const result = input.source === "kosis"
+    ? await getKosisSeriesProvider(input, config)
+    : await getStatSeriesProvider(input, config);
 
   return {
     source: input.source,

@@ -12,6 +12,8 @@
 - 법제처 adapter 기반 `search_law`, `get_law_text` 구현 및 CLI 검증 완료
 - 열린국회정보 기반 `search_bill`, `get_bill_detail` 구현 및 CLI 검증 완료
 - ECOS 기반 `search_stat_series`, `get_stat_series` 구현 및 CLI 검증 완료
+- KOSIS 초기 demographic slice 기반 `search_stat_series`, `get_stat_series` 구현 및 CLI 검증 완료
+- 공공데이터포털 기반 `search_public_dataset`, `get_dataset_metadata` 구현 및 CLI 검증 완료
 
 ## 목표 설치 흐름
 향후에는 아래 순서를 기본으로 합니다.
@@ -35,6 +37,10 @@ ASSEMBLY_API_KEY=your_key_here node dist/cli/index.js search-bill --bill-no 2207
 ASSEMBLY_API_KEY=your_key_here node dist/cli/index.js get-bill-detail --bill-no 2207018
 node dist/cli/index.js search-stat-series 기준금리 --source ecos --limit 3
 ECOS_API_KEY=your_key_here node dist/cli/index.js get-stat-series --source ecos --table 722Y001 --item 0101000 --start 202501 --end 202504
+node dist/cli/index.js search-stat-series 총인구 --source kosis --limit 3
+node dist/cli/index.js get-stat-series --source kosis --table DT_1IN1502 --start 2022 --end 2024
+node dist/cli/index.js search-public-dataset 주민등록 인구 --limit 5
+node dist/cli/index.js get-dataset-metadata --dataset-id 15108065
 ```
 
 ## MCP 실행 목표 예시
@@ -43,5 +49,5 @@ npm run mcp
 ```
 
 ## 현재 구현 범위 주의
-지금은 `search_law`, `get_law_text`, `search_bill`, `get_bill_detail`, `search_stat_series`, `get_stat_series`가 실제 동작합니다.
-다만 통계 축은 현재 ECOS 중심 working slice이며, KOSIS와 공공데이터 tool은 다음 단계 구현이 이어져야 합니다.
+지금은 `search_law`, `get_law_text`, `search_bill`, `get_bill_detail`, `search_stat_series`, `get_stat_series`, `search_public_dataset`, `get_dataset_metadata`가 실제 동작합니다.
+통계 축은 ECOS 전체와 KOSIS 초기 demographic slice까지 동작합니다.
