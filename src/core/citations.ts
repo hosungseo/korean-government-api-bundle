@@ -4,6 +4,10 @@ export function buildLawIdentifier(mst: string | null, lawId: string | null): st
   return "law:search";
 }
 
+export function buildLawCitation(lawName: string, articleRef?: string | null): string {
+  return articleRef ? `${lawName} ${articleRef}` : `${lawName} 전문`;
+}
+
 export function nowIso(): string {
   return new Date().toISOString();
 }

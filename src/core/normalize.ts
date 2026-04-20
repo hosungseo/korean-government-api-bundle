@@ -24,3 +24,28 @@ export function normalizeDate(value: string | null): string | null {
   if (digits.length !== 8) return value;
   return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;
 }
+
+export function stripXmlTags(input: string): string {
+  return decodeXmlEntities(input)
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function normalizeArticleRef(articleRef: string | undefined): string | null {
+  if (!articleRef) return null;
+  const trimmed = articleRef.replace(/\s+/g, "").trim();
+  if (!trimmed) return null;
+
+  const articleMatch = trimmed.match(/제?(\d+)조/);
+  if (articleMatch) {
+    return `제${articleMatch[1]}조`;
+  }
+
+  const numericOnly = trimmed.match(/^(\d+)$/);
+  if (numericOnly) {
+    return `제${numericOnly[1]}조`;
+  }
+
+  return trimmed;
+}

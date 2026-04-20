@@ -1,4 +1,4 @@
-import { searchLawTool, lawTools } from "./tools/law.js";
+import { getLawTextTool, searchLawTool, lawTools } from "./tools/law.js";
 import { assemblyTools } from "./tools/assembly.js";
 import { statTools } from "./tools/stats.js";
 import { datasetTools } from "./tools/dataset.js";
@@ -9,6 +9,8 @@ export async function runTool(name: string, input: unknown): Promise<unknown> {
   switch (name) {
     case "search_law":
       return searchLawTool(input as { query: string; limit?: number });
+    case "get_law_text":
+      return getLawTextTool(input as { law_name?: string; mst?: string; article_ref?: string });
     default:
       throw new Error(`Unsupported tool: ${name}`);
   }

@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 
-import { searchLawTool } from "../mcp/tools/law.js";
+import { getLawTextTool, searchLawTool } from "../mcp/tools/law.js";
 
 function printUsage(): void {
   console.log(`Usage:
   kgab search-law <query> [--limit N]
   kgab search_law <query> [--limit N]
+  kgab get-law-text --mst <MST> [--article 제1조]
+  kgab get-law-text --law-name <법령명> [--article 제1조]
   kgab mcp --list-tools
   kgab mcp run <tool_name> '<json>'`);
 }
@@ -17,6 +19,12 @@ function parseLimit(args: string[]): number | undefined {
   if (!raw) return undefined;
   const parsed = Number(raw);
   return Number.isNaN(parsed) ? undefined : parsed;
+}
+
+function parseOption(args: string[], optionName: string): string | undefined {
+  const index = args.findIndex((arg) => arg === optionName);
+  if (index === -1) return undefined;
+  return args[index + 1];
 }
 
 async function main(): Promise<void> {
@@ -54,6 +62,15 @@ async function main(): Promise<void> {
     const queryParts = rest.filter((arg, index) => !(arg === "--limit" || rest[index - 1] === "--limit"));
     const query = queryParts.join(" ").trim();
     const result = await searchLawTool({ query, limit });
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  if (command === "get-law-text" || command === "get_law_text") {
+    const mst = parseOption(rest, "--mst");
+    const lawName = parseOption(rest, "--law-name");
+    const articleRef = parseOption(rest, "--article");
+    const result = await getLawTextTool({ mst, law_name: lawName, article_ref: articleRef });
     console.log(JSON.stringify(result, null, 2));
     return;
   }

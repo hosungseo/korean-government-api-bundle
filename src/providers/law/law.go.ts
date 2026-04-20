@@ -1,6 +1,6 @@
 import { ProviderError } from "../../core/errors.js";
-import { clampLimit, decodeXmlEntities, normalizeDate, normalizeQueryText } from "../../core/normalize.js";
-import type { BundleConfig, SearchLawInput, SearchLawItem } from "../../core/types.js";
+import { clampLimit, decodeXmlEntities, normalizeArticleRef, normalizeDate, normalizeQueryText, stripXmlTags } from "../../core/normalize.js";
+import type { BundleConfig, GetLawTextInput, SearchLawInput, SearchLawItem } from "../../core/types.js";
 
 function extractTag(block: string, tagName: string): string | null {
   const pattern = new RegExp(`<${tagName}>([\\s\\S]*?)</${tagName}>`);
@@ -16,6 +16,56 @@ function buildDetailUrl(detailPath: string | null, config: BundleConfig): string
   if (!detailPath) return config.law.detailBaseUrl;
   if (detailPath.startsWith("http://") || detailPath.startsWith("https://")) return decodeXmlEntities(detailPath);
   return `${config.law.detailBaseUrl}${decodeXmlEntities(detailPath)}`;
+}
+
+function buildServiceUrl(mst: string, config: BundleConfig): string {
+  const url = new URL(config.law.serviceBaseUrl);
+  url.searchParams.set("OC", config.law.oc);
+  url.searchParams.set("target", "law");
+  url.searchParams.set("type", "XML");
+  url.searchParams.set("MST", mst);
+  return url.toString();
+}
+
+function extractSections(xml: string, tagName: string): string[] {
+  return [...xml.matchAll(new RegExp(`<${tagName}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${tagName}>`, "g"))].map((match) => match[1]);
+}
+
+function selectBestLawMatch(items: SearchLawItem[], requestedLawName: string): SearchLawItem | null {
+  const normalizedRequested = normalizeQueryText(requestedLawName);
+  const exact = items.find((item) => normalizeQueryText(item.law_name) === normalizedRequested);
+  if (exact) return exact;
+
+  const contains = items.find((item) => normalizeQueryText(item.law_name).includes(normalizedRequested));
+  return contains ?? items[0] ?? null;
+}
+
+function extractLawNameFromXml(xml: string): string | null {
+  return extractTag(xml, "법령명_한글") ?? extractTag(xml, "법령명한글");
+}
+
+function buildArticleText(articleBlock: string): string {
+  const main = extractTag(articleBlock, "조문내용");
+  const clauses = extractSections(articleBlock, "항").map((clauseBlock) => {
+    const clauseNumber = extractTag(clauseBlock, "항번호") ?? "";
+    const clauseContent = extractTag(clauseBlock, "항내용") ?? "";
+    const subItems = extractSections(clauseBlock, "호").map((subItemBlock) => {
+      const number = extractTag(subItemBlock, "호번호") ?? "";
+      const content = extractTag(subItemBlock, "호내용") ?? "";
+      return `${number} ${content}`.trim();
+    });
+
+    return [
+      `${clauseNumber} ${clauseContent}`.trim(),
+      ...subItems
+    ].filter(Boolean).join("\n");
+  });
+
+  return [main, ...clauses]
+    .filter(Boolean)
+    .map((part) => stripXmlTags(part ?? ""))
+    .filter(Boolean)
+    .join("\n");
 }
 
 export async function searchLawProvider(input: SearchLawInput, config: BundleConfig): Promise<{ items: SearchLawItem[]; originalUrl: string }> {
@@ -64,5 +114,83 @@ export async function searchLawProvider(input: SearchLawInput, config: BundleCon
   return {
     items,
     originalUrl: url.toString()
+  };
+}
+
+export async function getLawTextProvider(
+  input: GetLawTextInput,
+  config: BundleConfig
+): Promise<{ lawName: string; mst: string; articleRef: string | null; text: string; originalUrl: string }> {
+  let mst = input.mst?.trim() || null;
+  let lawName = input.law_name?.trim() || null;
+
+  if (!mst && !lawName) {
+    throw new ProviderError("get_law_text requires mst or law_name");
+  }
+
+  if (!mst && lawName) {
+    const { items } = await searchLawProvider({ query: lawName, limit: 20 }, config);
+    const best = selectBestLawMatch(items, lawName);
+    if (!best?.mst) {
+      throw new ProviderError("could not resolve MST from law_name", { lawName });
+    }
+    mst = best.mst;
+    lawName = best.law_name;
+  }
+
+  if (!mst) {
+    throw new ProviderError("could not resolve mst for get_law_text", { input });
+  }
+
+  const originalUrl = buildServiceUrl(mst, config);
+  const response = await fetch(originalUrl, {
+    headers: {
+      "User-Agent": "korean-government-api-bundle/0.1.0"
+    }
+  });
+
+  if (!response.ok) {
+    throw new ProviderError(`lawService request failed with status ${response.status}`, { url: originalUrl });
+  }
+
+  const xml = await response.text();
+  const resolvedLawName = lawName ?? extractLawNameFromXml(xml);
+  if (!resolvedLawName) {
+    throw new ProviderError("could not extract law name from lawService response", { mst });
+  }
+
+  const normalizedArticleRef = normalizeArticleRef(input.article_ref);
+  const articleBlocks = extractSections(xml, "조문단위").filter((block) => extractTag(block, "조문여부") === "조문");
+
+  if (normalizedArticleRef) {
+    const matchedBlock = articleBlocks.find((block) => {
+      const articleNumber = extractTag(block, "조문번호");
+      return articleNumber ? `제${articleNumber}조` === normalizedArticleRef : false;
+    });
+
+    if (!matchedBlock) {
+      throw new ProviderError("requested article was not found", { mst, articleRef: normalizedArticleRef });
+    }
+
+    return {
+      lawName: resolvedLawName,
+      mst,
+      articleRef: normalizedArticleRef,
+      text: buildArticleText(matchedBlock),
+      originalUrl
+    };
+  }
+
+  const fullText = articleBlocks
+    .map((block) => buildArticleText(block))
+    .filter(Boolean)
+    .join("\n\n");
+
+  return {
+    lawName: resolvedLawName,
+    mst,
+    articleRef: null,
+    text: fullText,
+    originalUrl
   };
 }

@@ -7,10 +7,10 @@
 - provider registry 코드화 완료
 - config loader 추가 완료
 - 법제처 adapter 기반 `search_law` 구현 완료
+- `law_name → MST resolve → lawService` 흐름의 `get_law_text` 구현 완료
 
 ## 다음 구현 순서
 ### Phase 2
-- `get_law_text`
 - `search_bill`
 - `get_bill_detail`
 

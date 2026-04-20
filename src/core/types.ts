@@ -65,10 +65,24 @@ export interface SearchLawResponse extends ToolResponseBase<SearchLawInput> {
   items: SearchLawItem[];
 }
 
+export interface GetLawTextInput {
+  law_name?: string;
+  mst?: string;
+  article_ref?: string;
+}
+
+export interface GetLawTextResponse extends ToolResponseBase<GetLawTextInput> {
+  law_name: string;
+  article_ref: string | null;
+  text: string;
+  citation: string;
+}
+
 export interface BundleConfig {
   law: {
     oc: string;
     searchBaseUrl: string;
+    serviceBaseUrl: string;
     detailBaseUrl: string;
   };
 }
