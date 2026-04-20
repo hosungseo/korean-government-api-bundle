@@ -3,6 +3,7 @@
 import { getBillDetailTool, searchBillTool } from "../mcp/tools/assembly.js";
 import { getDatasetMetadataTool, searchPublicDatasetTool } from "../mcp/tools/dataset.js";
 import { getLawTextTool, searchLawTool } from "../mcp/tools/law.js";
+import { getLawmakingItemDetailTool, searchLawmakingItemsTool } from "../mcp/tools/lawmaking.js";
 import { getStatSeriesTool, searchStatSeriesTool } from "../mcp/tools/stats.js";
 
 function printUsage(): void {
@@ -15,6 +16,8 @@ function printUsage(): void {
   kgab search-bill --bill-name <의안명> [--committee <위원회>] [--age <제22대>] [--limit N]
   kgab get-bill-detail --bill-no <의안번호>
   kgab get-bill-detail --bill-id <BILL_ID>
+  kgab search-lawmaking-items --category <gov-status|plan|notice> [--agency-code <코드>] [--law-kind-code <코드>] [--status-code <코드>] [--year YYYY] [--start-date YYYY-MM-DD] [--end-date YYYY-MM-DD] [--query <검색어>] [--limit N]
+  kgab get-lawmaking-item-detail --category <gov-status|plan|notice> --item-id <ID> [--mapping-id <ID>] [--announce-type TYPE5]
   kgab search-stat-series <query> [--source ecos|kosis|all] [--limit N]
   kgab get-stat-series --source ecos|kosis --table <STAT_CODE> [--item <ITEM_CODE>] [--org <ORG_ID>] [--obj-l1 <CODE>] [--obj-l2 <CODE>] [--obj-l3 <CODE>] --start YYYYMM --end YYYYMM
   kgab search-public-dataset <query> [--limit N]
@@ -102,6 +105,46 @@ async function main(): Promise<void> {
     const billNo = parseOption(rest, "--bill-no");
     const billId = parseOption(rest, "--bill-id");
     const result = await getBillDetailTool({ bill_no: billNo, bill_id: billId });
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  if (command === "search-lawmaking-items" || command === "search_lawmaking_items") {
+    const category = parseOption(rest, "--category") as "gov-status" | "plan" | "notice" | undefined;
+    const agencyCode = parseOption(rest, "--agency-code");
+    const lawKindCode = parseOption(rest, "--law-kind-code");
+    const statusCode = parseOption(rest, "--status-code");
+    const year = parseOption(rest, "--year");
+    const startDate = parseOption(rest, "--start-date");
+    const endDate = parseOption(rest, "--end-date");
+    const query = parseOption(rest, "--query");
+    const limit = parseLimit(rest);
+    const result = await searchLawmakingItemsTool({
+      category: category ?? "gov-status",
+      agency_code: agencyCode,
+      law_kind_code: lawKindCode,
+      status_code: statusCode,
+      year,
+      start_date: startDate,
+      end_date: endDate,
+      query,
+      limit
+    });
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  if (command === "get-lawmaking-item-detail" || command === "get_lawmaking_item_detail") {
+    const category = parseOption(rest, "--category") as "gov-status" | "plan" | "notice" | undefined;
+    const itemId = parseOption(rest, "--item-id");
+    const mappingId = parseOption(rest, "--mapping-id");
+    const announceType = parseOption(rest, "--announce-type");
+    const result = await getLawmakingItemDetailTool({
+      category: category ?? "gov-status",
+      item_id: itemId ?? "",
+      mapping_id: mappingId,
+      announce_type: announceType
+    });
     console.log(JSON.stringify(result, null, 2));
     return;
   }

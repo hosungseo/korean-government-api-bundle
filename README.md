@@ -10,6 +10,7 @@
 ## Scope
 - 법제처 국가법령정보 API
 - 열린국회정보 API
+- 국민참여입법센터 정보공개활용 API
 - 한국은행 ECOS API
 - KOSIS 국가통계포털 API
 - 공공데이터포털 metadata / dataset API
@@ -21,6 +22,8 @@
 | `get_law_text` | 법령 원문 또는 조문 조회 | 불필요 |
 | `search_bill` | 의안번호/의안명/제안자/위원회 기준 법안 검색 | 불필요 |
 | `get_bill_detail` | 특정 법안의 상태, 타임라인, 제안이유/주요내용 조회 | 불필요 |
+| `search_lawmaking_items` | 입법현황/입법계획/입법예고 목록 검색 | `LAWMAKING_OC` 필요 |
+| `get_lawmaking_item_detail` | 입법현황/입법계획/입법예고 상세 조회 | `LAWMAKING_OC` 필요 |
 | `search_stat_series` | ECOS/KOSIS 통계 시계열 후보 검색 | 불필요 |
 | `get_stat_series` | 특정 통계 시계열 값 조회 | 불필요 |
 | `search_public_dataset` | 공공데이터포털 데이터셋 검색 | 불필요 |
@@ -39,6 +42,11 @@ kgab search-law "행정기본법" --limit 3
 kgab get-law-text --law-name 행정기본법 --article 제1조
 kgab search-bill --bill-no 2207018
 kgab get-bill-detail --bill-no 2207018
+LAWMAKING_OC=hosung91 kgab search-lawmaking-items --category gov-status --agency-code 1741000 --status-code EA02 --limit 5
+LAWMAKING_OC=hosung91 kgab get-lawmaking-item-detail --category gov-status --item-id 2000000324302
+LAWMAKING_OC=hosung91 kgab search-lawmaking-items --category plan --year 2026 --agency-code 1741000 --limit 5
+LAWMAKING_OC=hosung91 kgab search-lawmaking-items --category notice --agency-code 1741000 --limit 5
+LAWMAKING_OC=hosung91 kgab get-lawmaking-item-detail --category notice --item-id 86344 --mapping-id 2000000319636 --announce-type TYPE5
 kgab search-stat-series 기준금리 --source ecos --limit 3
 kgab get-stat-series --source ecos --table 722Y001 --item 0101000 --start 202501 --end 202504
 kgab search-stat-series 총인구 --source kosis --limit 3
@@ -98,10 +106,11 @@ src/
 5. `law_name → MST resolve → lawService` 흐름의 `get_law_text` 구현
 6. 열린국회정보 기반 `search_bill` 구현
 7. `bill_no → BILL_ID resolve → BILLINFODETAIL + BPMBILLSUMMARY` 흐름의 `get_bill_detail` 구현
-8. ECOS 기반 `search_stat_series` 구현
-9. ECOS 기반 `get_stat_series` 구현
-10. KOSIS demographic slice 확장 기반 `search_stat_series`, `get_stat_series` 구현
-11. 공공데이터포털 기반 `search_public_dataset`, `get_dataset_metadata` 구현
+8. 국민참여입법센터 기반 `search_lawmaking_items`, `get_lawmaking_item_detail` 구현
+9. ECOS 기반 `search_stat_series` 구현
+10. ECOS 기반 `get_stat_series` 구현
+11. KOSIS demographic slice 확장 기반 `search_stat_series`, `get_stat_series` 구현
+12. 공공데이터포털 기반 `search_public_dataset`, `get_dataset_metadata` 구현
 
 현재 구조는 아래 3층을 기준으로 움직입니다.
 1. raw provider adapters
@@ -111,5 +120,6 @@ src/
 현재 남은 우선순위는 다음과 같습니다.
 1. KOSIS coverage를 curated catalog에서 자동 catalog/metadata 기반으로 더 넓히기
 2. 공공데이터포털 상세 메타데이터 필드를 더 구조화
-3. cross-source compare / verify 계열 도구 추가
-4. provider별 catalog 자동 생성/동기화
+3. 국민참여입법센터 category coverage를 `ogLmPpMod`, `ptcpAdmPp`, `lsItptEmp`, `loLsExample`까지 넓히기
+4. cross-source compare / verify 계열 도구 추가
+5. provider별 catalog 자동 생성/동기화

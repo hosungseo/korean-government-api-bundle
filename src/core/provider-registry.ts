@@ -30,6 +30,20 @@ export const providerRegistry: ProviderRegistryEntry[] = [
     status: "mvp"
   },
   {
+    providerId: "lawmaking_center",
+    providerName: "국민참여입법센터 정보공개활용",
+    domain: "lawmaking",
+    sourceType: "lawmaking",
+    supportedIntents: ["lawmaking-search", "lawmaking-detail"],
+    keyEndpoints: ["govLmSts", "lmPln", "ogLmPp"],
+    inputEntities: ["category", "item_id", "mapping_id", "announce_type", "agency_code", "query"],
+    responseShape: "lawmaking list / detail",
+    freshnessModel: "official lawmaking portal response at request time",
+    originalUrlPattern: "https://www.lawmaking.go.kr/rest/*",
+    priority: 95,
+    status: "mvp"
+  },
+  {
     providerId: "ecos",
     providerName: "한국은행 ECOS",
     domain: "stats",

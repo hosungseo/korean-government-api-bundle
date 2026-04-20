@@ -10,6 +10,8 @@
 - `law_name → MST resolve → lawService` 흐름의 `get_law_text` 구현 완료
 - 열린국회정보 기반 `search_bill` 구현 완료
 - `bill_no → BILL_ID resolve → BILLINFODETAIL + BPMBILLSUMMARY` 흐름의 `get_bill_detail` 구현 완료
+- 국민참여입법센터 기반 `search_lawmaking_items` 구현 완료
+- 국민참여입법센터 기반 `get_lawmaking_item_detail` 구현 완료
 - ECOS 기반 `search_stat_series` 구현 완료
 - ECOS 기반 `get_stat_series` 구현 완료
 - KOSIS demographic slice 확장 기반 `search_stat_series` 구현 완료
@@ -19,6 +21,8 @@
 
 ## 다음 구현 순서
 ### Phase 4
+- 국민참여입법센터 category coverage를 `ogLmPpMod`, `ptcpAdmPp`, `lsItptEmp`, `loLsExample`까지 확장
+- 입법예고/행정예고 attachment 및 section parser 정교화
 - KOSIS `getMeta(type=ITM)` 기반 catalog 자동 생성/보강
 - KOSIS 지역/성별/연령 default slice를 더 넓은 curated set으로 확장
 

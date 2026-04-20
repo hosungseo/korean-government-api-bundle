@@ -3,6 +3,8 @@ export type BundleIntent =
   | "law-text"
   | "bill-search"
   | "bill-detail"
+  | "lawmaking-search"
+  | "lawmaking-detail"
   | "stat-search"
   | "stat-series"
   | "dataset-search"
@@ -13,7 +15,7 @@ export type ProviderStatus = "mvp" | "expansion" | "experimental";
 export interface ProviderRegistryEntry {
   providerId: string;
   providerName: string;
-  domain: "law" | "assembly" | "stats" | "dataset" | "records" | "weather";
+  domain: "law" | "assembly" | "lawmaking" | "stats" | "dataset" | "records" | "weather";
   sourceType: string;
   supportedIntents: BundleIntent[];
   keyEndpoints: string[];
@@ -124,6 +126,77 @@ export interface GetBillDetailResponse extends ToolResponseBase<GetBillDetailInp
   plenary_result: string | null;
 }
 
+export type LawmakingCategory = "gov-status" | "plan" | "notice";
+
+export interface SearchLawmakingItemsInput {
+  category: LawmakingCategory;
+  agency_code?: string;
+  law_kind_code?: string;
+  status_code?: string;
+  year?: string;
+  start_date?: string;
+  end_date?: string;
+  query?: string;
+  limit?: number;
+}
+
+export interface LawmakingListItem {
+  category: LawmakingCategory;
+  item_id: string;
+  title: string;
+  agency_name: string | null;
+  department_name: string | null;
+  law_kind: string | null;
+  revision_type: string | null;
+  status: string | null;
+  date: string | null;
+  notice_no: string | null;
+  mapping_id: string | null;
+  announce_type: string | null;
+  attachment_name: string | null;
+  attachment_url: string | null;
+  original_url: string;
+}
+
+export interface SearchLawmakingItemsResponse extends ToolResponseBase<SearchLawmakingItemsInput> {
+  items: LawmakingListItem[];
+}
+
+export interface GetLawmakingItemDetailInput {
+  category: LawmakingCategory;
+  item_id: string;
+  mapping_id?: string;
+  announce_type?: string;
+}
+
+export interface LawmakingDetailField {
+  label: string;
+  value: string;
+}
+
+export interface LawmakingAttachment {
+  name: string;
+  url: string;
+}
+
+export interface GetLawmakingItemDetailResponse extends ToolResponseBase<GetLawmakingItemDetailInput> {
+  category: LawmakingCategory;
+  item_id: string;
+  mapping_id: string | null;
+  announce_type: string | null;
+  title: string;
+  agency_name: string | null;
+  department_name: string | null;
+  law_kind: string | null;
+  revision_type: string | null;
+  status: string | null;
+  date: string | null;
+  summary_text: string | null;
+  body_text: string | null;
+  fields: LawmakingDetailField[];
+  attachments: LawmakingAttachment[];
+}
+
 export interface SearchStatSeriesInput {
   query: string;
   source?: "ecos" | "kosis" | "all";
@@ -210,6 +283,10 @@ export interface BundleConfig {
     searchBaseUrl: string;
     serviceBaseUrl: string;
     detailBaseUrl: string;
+  };
+  lawmaking: {
+    oc: string;
+    baseUrl: string;
   };
   assembly: {
     apiKey: string;

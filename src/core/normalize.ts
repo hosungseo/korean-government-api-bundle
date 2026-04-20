@@ -15,11 +15,18 @@ export function decodeXmlEntities(input: string): string {
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&middot;/g, "·")
     .trim();
 }
 
 export function normalizeDate(value: string | null): string | null {
   if (!value) return null;
+  const grouped = value.match(/(\d{4})\D+(\d{1,2})\D+(\d{1,2})/);
+  if (grouped) {
+    const [, year, month, day] = grouped;
+    return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  }
   const digits = value.replace(/\D/g, "");
   if (digits.length !== 8) return value;
   return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;

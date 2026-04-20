@@ -1,9 +1,10 @@
 import { getLawTextTool, searchLawTool, lawTools } from "./tools/law.js";
 import { assemblyTools, getBillDetailTool, searchBillTool } from "./tools/assembly.js";
+import { getLawmakingItemDetailTool, lawmakingTools, searchLawmakingItemsTool } from "./tools/lawmaking.js";
 import { getStatSeriesTool, searchStatSeriesTool, statTools } from "./tools/stats.js";
 import { datasetTools, getDatasetMetadataTool, searchPublicDatasetTool } from "./tools/dataset.js";
 
-export const toolCatalog = [...lawTools, ...assemblyTools, ...statTools, ...datasetTools];
+export const toolCatalog = [...lawTools, ...assemblyTools, ...lawmakingTools, ...statTools, ...datasetTools];
 
 export async function runTool(name: string, input: unknown): Promise<unknown> {
   switch (name) {
@@ -15,6 +16,10 @@ export async function runTool(name: string, input: unknown): Promise<unknown> {
       return searchBillTool(input as { bill_no?: string; bill_name?: string; proposer?: string; committee?: string; age?: string; limit?: number });
     case "get_bill_detail":
       return getBillDetailTool(input as { bill_no?: string; bill_id?: string });
+    case "search_lawmaking_items":
+      return searchLawmakingItemsTool(input as { category: "gov-status" | "plan" | "notice"; agency_code?: string; law_kind_code?: string; status_code?: string; year?: string; start_date?: string; end_date?: string; query?: string; limit?: number });
+    case "get_lawmaking_item_detail":
+      return getLawmakingItemDetailTool(input as { category: "gov-status" | "plan" | "notice"; item_id: string; mapping_id?: string; announce_type?: string });
     case "search_stat_series":
       return searchStatSeriesTool(input as { query: string; source?: "ecos" | "kosis" | "all"; limit?: number });
     case "get_stat_series":

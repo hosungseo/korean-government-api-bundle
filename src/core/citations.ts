@@ -14,6 +14,18 @@ export function buildBillIdentifier(billId: string | null, billNo: string | null
   return "bill:search";
 }
 
+export function buildLawmakingIdentifier(
+  category: string,
+  itemId: string,
+  mappingId?: string | null,
+  announceType?: string | null
+): string {
+  const parts = ["lawmaking", category, itemId];
+  if (mappingId) parts.push(mappingId);
+  if (announceType) parts.push(announceType);
+  return parts.join(":");
+}
+
 export function buildStatIdentifier(
   source: string,
   tableId: string,
