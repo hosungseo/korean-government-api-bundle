@@ -2,12 +2,14 @@
 
 `korean-government-api-bundle`는 MCP + CLI 실행 표면을 목표로 하는 저장소입니다.
 
-현재는 초기 scaffold 단계이므로, 설치보다 **문서 구조와 tool contract** 확인이 우선입니다.
+이제 초기 scaffold를 넘어서 **첫 working tool(`search_law`)** 이 구현된 상태입니다.
 
 ## 현재 상태
 - repo bootstrap 완료
 - 문서화 완료
-- 실제 provider adapter 구현은 진행 전
+- provider registry 코드화 완료
+- config loader 추가 완료
+- 법제처 adapter 기반 `search_law` 구현 및 CLI 검증 완료
 
 ## 목표 설치 흐름
 향후에는 아래 순서를 기본으로 합니다.
@@ -25,7 +27,7 @@ git clone https://github.com/hosungseo/korean-government-api-bundle.git
 cd korean-government-api-bundle
 npm install
 npm run build
-npm run dev
+node dist/cli/index.js search-law "행정기본법" --limit 3
 ```
 
 ## MCP 실행 목표 예시
@@ -33,6 +35,6 @@ npm run dev
 npm run mcp
 ```
 
-## 구현 전 주의
-현재는 placeholder 파일만 있으므로 실제 설치성 검증은 아직 끝나지 않았습니다.
-설치 문서는 이후 첫 working tool(`search_law`) 구현 시점에 다시 구체화합니다.
+## 현재 구현 범위 주의
+지금은 `search_law`만 실제 동작합니다.
+나머지 tool은 문서와 골격만 존재하므로, 다음 단계 구현이 이어져야 합니다.

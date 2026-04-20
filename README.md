@@ -44,8 +44,8 @@ kgab search-public-dataset "주민등록 인구"
 ## 시작 순서
 1. 저장소 구조와 문서를 먼저 읽습니다.
 2. `docs/setup.md`와 `docs/security-and-secrets.md`를 확인합니다.
-3. provider registry와 matching 구조를 고정합니다.
-4. 첫 working tool(`search_law`)부터 구현합니다.
+3. provider registry와 matching 구조를 확인합니다.
+4. `kgab search-law "행정기본법" --limit 3`로 첫 working tool을 테스트합니다.
 
 ## Design principles
 - provider-first가 아니라 **question-first tools**
@@ -81,16 +81,24 @@ src/
 ```
 
 ## Status
-초기 설계 및 문서화 단계입니다.
+초기 설계 단계에서 **첫 working slice**까지 진입했습니다.
 
-현재는 아래 3층 구조를 기준으로 설계 중입니다.
+현재 구현된 것:
+1. provider registry 코드화
+2. config loader 추가
+3. law-search resolver 골격 추가
+4. 법제처 adapter 기반 `search_law` CLI/MCP 진입점 구현
+
+현재 구조는 아래 3층을 기준으로 움직입니다.
 1. raw provider adapters
 2. matching / routing / normalization layer
 3. MCP + CLI tool surface
 
-구현 우선순위는 다음과 같습니다.
-1. 법제처
-2. 열린국회정보
-3. ECOS
-4. KOSIS
-5. 공공데이터포털
+다음 구현 우선순위는 다음과 같습니다.
+1. `get_law_text`
+2. `search_bill`
+3. `get_bill_detail`
+4. `search_stat_series`
+5. `get_stat_series`
+6. `search_public_dataset`
+7. `get_dataset_metadata`

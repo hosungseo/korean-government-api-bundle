@@ -1,2 +1,1 @@
-// stats tool placeholder
-export {};
+export const statTools = [] as const;

@@ -1,2 +1,1 @@
-// assembly tool placeholder
-export {};
+export const assemblyTools = [] as const;

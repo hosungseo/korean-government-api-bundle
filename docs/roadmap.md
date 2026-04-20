@@ -4,13 +4,11 @@
 - repo bootstrap 완료
 - MVP 문서화 완료
 - source registry / matching rules / tool-provider mapping 정리 완료
+- provider registry 코드화 완료
+- config loader 추가 완료
+- 법제처 adapter 기반 `search_law` 구현 완료
 
 ## 다음 구현 순서
-### Phase 1
-- provider registry 코드화
-- resolver 골격 작성
-- `search_law` 구현
-
 ### Phase 2
 - `get_law_text`
 - `search_bill`
