@@ -14,6 +14,18 @@
 - KOSIS 국가통계포털 API
 - 공공데이터포털 metadata / dataset API
 
+## 어떤 일을 하게 될까
+| Tool | 설명 | 사용자 로그인 |
+| --- | --- | --- |
+| `search_law` | 법령명/키워드로 법령 검색 | 불필요 |
+| `get_law_text` | 법령 원문 또는 조문 조회 | 불필요 |
+| `search_bill` | 의안번호/의안명/제안자/위원회 기준 법안 검색 | 불필요 |
+| `get_bill_detail` | 특정 법안의 상태, 타임라인, 제안이유/주요내용 조회 | 불필요 |
+| `search_stat_series` | ECOS/KOSIS 통계 시계열 후보 검색 | 불필요 |
+| `get_stat_series` | 특정 통계 시계열 값 조회 | 불필요 |
+| `search_public_dataset` | 공공데이터포털 데이터셋 검색 | 불필요 |
+| `get_dataset_metadata` | 데이터셋 메타데이터 상세 조회 | 불필요 |
+
 ## Interface
 ### MCP
 - Claude Desktop
@@ -29,15 +41,11 @@ kgab get-stat-series --source ecos --table 722Y001 --item 0101000
 kgab search-public-dataset "주민등록 인구"
 ```
 
-## MVP tools
-1. `search_law`
-2. `get_law_text`
-3. `search_bill`
-4. `get_bill_detail`
-5. `search_stat_series`
-6. `get_stat_series`
-7. `search_public_dataset`
-8. `get_dataset_metadata`
+## 시작 순서
+1. 저장소 구조와 문서를 먼저 읽습니다.
+2. `docs/setup.md`와 `docs/security-and-secrets.md`를 확인합니다.
+3. provider registry와 matching 구조를 고정합니다.
+4. 첫 working tool(`search_law`)부터 구현합니다.
 
 ## Design principles
 - provider-first가 아니라 **question-first tools**
@@ -47,12 +55,19 @@ kgab search-public-dataset "주민등록 인구"
 - 추후 verify / compare 계열 도구 확장 가능
 
 ## Docs
-- `docs/MVP.md`
-- `docs/TOOL-SCHEMA.md`
-- `docs/SOURCE-MAP.md`
-- `docs/SOURCE-REGISTRY.md`
-- `docs/MATCHING-RULES.md`
-- `docs/TOOL-PROVIDER-MAPPING.md`
+| 문서 | 설명 |
+| --- | --- |
+| `docs/install.md` | 설치/실행 흐름 초안 |
+| `docs/setup.md` | 공통 설정 가이드 |
+| `docs/security-and-secrets.md` | 시크릿/로깅/보안 원칙 |
+| `docs/sources.md` | 출처 및 참고 표면 |
+| `docs/roadmap.md` | 구현 로드맵 |
+| `docs/MVP.md` | MVP 범위와 도구 정의 |
+| `docs/TOOL-SCHEMA.md` | 도구 입력/출력 contract |
+| `docs/SOURCE-MAP.md` | provider 역할 요약 |
+| `docs/SOURCE-REGISTRY.md` | core/expansion provider registry |
+| `docs/MATCHING-RULES.md` | 질문 → provider 매칭 규칙 |
+| `docs/TOOL-PROVIDER-MAPPING.md` | tool ↔ raw endpoint 매핑 |
 
 ## Suggested structure
 ```txt
