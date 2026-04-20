@@ -50,6 +50,9 @@ kgab search-public-dataset "주민등록 인구"
 - `docs/MVP.md`
 - `docs/TOOL-SCHEMA.md`
 - `docs/SOURCE-MAP.md`
+- `docs/SOURCE-REGISTRY.md`
+- `docs/MATCHING-RULES.md`
+- `docs/TOOL-PROVIDER-MAPPING.md`
 
 ## Suggested structure
 ```txt
@@ -64,6 +67,12 @@ src/
 
 ## Status
 초기 설계 및 문서화 단계입니다.
+
+현재는 아래 3층 구조를 기준으로 설계 중입니다.
+1. raw provider adapters
+2. matching / routing / normalization layer
+3. MCP + CLI tool surface
+
 구현 우선순위는 다음과 같습니다.
 1. 법제처
 2. 열린국회정보
