@@ -13,19 +13,31 @@ import type {
 const categoryEndpointMap: Record<LawmakingCategory, string> = {
   "gov-status": "govLmSts",
   plan: "lmPln",
-  notice: "ogLmPp"
+  notice: "ogLmPp",
+  "notice-mod": "ogLmPpMod",
+  "admin-notice": "ptcpAdmPp",
+  interpretation: "lsItptEmp",
+  example: "loLsExample"
 };
 
 const listTagMap: Record<LawmakingCategory, string> = {
   "gov-status": "ApiList01Vo",
   plan: "ApiList02Vo",
-  notice: "ApiList04Vo"
+  notice: "ApiList04Vo",
+  "notice-mod": "ApiList13Vo",
+  "admin-notice": "ApiList05Vo",
+  interpretation: "ApiList09Vo",
+  example: "ApiList11Vo"
 };
 
 const detailTagMap: Record<LawmakingCategory, string> = {
   "gov-status": "ApiDetile01Vo",
   plan: "ApiDetile02Vo",
-  notice: "ApiDetile04Vo"
+  notice: "ApiDetile04Vo",
+  "notice-mod": "ApiDetile13Vo",
+  "admin-notice": "ApiDetile05Vo",
+  interpretation: "ApiDetile9Vo",
+  example: "ApiDetile11Vo"
 };
 
 interface LawmakingDetailResult {
@@ -112,6 +124,40 @@ function buildListUrl(input: SearchLawmakingItemsInput, config: BundleConfig): s
     if (input.query) url.searchParams.set("lsNm", normalizeQueryText(input.query));
   }
 
+  if (input.category === "notice-mod") {
+    if (input.agency_code) url.searchParams.set("cptOfiOrgCd", input.agency_code);
+    if (input.law_kind_code) url.searchParams.set("lsClsCd", input.law_kind_code);
+    if (input.status_code) url.searchParams.set("diff", input.status_code);
+    if (input.query) url.searchParams.set("lsNm", normalizeQueryText(input.query));
+  }
+
+  if (input.category === "admin-notice") {
+    if (input.agency_name) url.searchParams.set("asndOfiNm", normalizeQueryText(input.agency_name));
+    if (input.law_kind_code) url.searchParams.set("lsClsCd", input.law_kind_code);
+    if (input.status_code) url.searchParams.set("closing", input.status_code);
+    if (input.query) url.searchParams.set("admRulNm", normalizeQueryText(input.query));
+  }
+
+  if (input.category === "interpretation") {
+    if (input.agency_code) url.searchParams.set("lsCptOrg", input.agency_code);
+    const startDate = normalizeDateParam(input.start_date);
+    const endDate = normalizeDateParam(input.end_date);
+    if (startDate) url.searchParams.set("prdFrDay", startDate);
+    if (endDate) url.searchParams.set("prdToDay", endDate);
+    if (input.query) url.searchParams.set("schKeyword", normalizeQueryText(input.query));
+  }
+
+  if (input.category === "example") {
+    const startDate = normalizeDateParam(input.start_date);
+    const endDate = normalizeDateParam(input.end_date);
+    if (startDate) url.searchParams.set("scFmDt", startDate);
+    if (endDate) url.searchParams.set("scToDt", endDate);
+    if (input.query) {
+      url.searchParams.set("scTextType", input.query_field ?? "caseNm");
+      url.searchParams.set("scText", normalizeQueryText(input.query));
+    }
+  }
+
   return url.toString();
 }
 
@@ -120,7 +166,7 @@ function buildDetailUrl(input: GetLawmakingItemDetailInput, config: BundleConfig
   const endpoint = categoryEndpointMap[input.category];
 
   let path = `${config.lawmaking.baseUrl}/${endpoint}`;
-  if (input.category === "notice") {
+  if (["notice", "notice-mod", "admin-notice"].includes(input.category)) {
     path += `/${input.item_id}/${input.mapping_id}/${input.announce_type}`;
   } else {
     path += `/${input.item_id}`;
@@ -233,6 +279,95 @@ function mapNoticeListItem(block: string, config: BundleConfig): LawmakingListIt
     attachment_name: extractTag(block, "FileName"),
     attachment_url: extractTag(block, "FileDownLink"),
     original_url: buildDetailUrl({ category: "notice", item_id: itemId, mapping_id: mappingId ?? "0", announce_type: announceType ?? "TYPE5" }, config)
+  };
+}
+
+function mapNoticeModListItem(block: string, config: BundleConfig): LawmakingListItem {
+  const itemId = extractTag(block, "ogLmPpSeq") ?? "";
+  const mappingId = extractTag(block, "mappingLbicId");
+  const announceType = extractTag(block, "announceType");
+  const rawTitle = extractTag(block, "lsNm");
+  return {
+    category: "notice-mod",
+    item_id: itemId,
+    title: cleanNoticeTitle(rawTitle),
+    agency_name: extractTag(block, "asndOfiNm"),
+    department_name: null,
+    law_kind: extractTag(block, "lsClsNm"),
+    revision_type: null,
+    status: parseNoticeStatus(rawTitle) ?? extractTag(block, "status"),
+    date: normalizeDate(extractTag(block, "modDt") ?? extractTag(block, "pntcDt")),
+    notice_no: extractTag(block, "pntcNo"),
+    mapping_id: mappingId,
+    announce_type: announceType,
+    attachment_name: extractTag(block, "FileName"),
+    attachment_url: extractTag(block, "FileDownLink"),
+    original_url: buildDetailUrl({ category: "notice-mod", item_id: itemId, mapping_id: mappingId ?? "0", announce_type: announceType ?? "TYPE5" }, config)
+  };
+}
+
+function mapAdminNoticeListItem(block: string, config: BundleConfig): LawmakingListItem {
+  const itemId = extractTag(block, "ogAdmPpSeq") ?? "";
+  const mappingId = extractTag(block, "mappingAdmRulSeq");
+  const announceType = extractTag(block, "announceType");
+  return {
+    category: "admin-notice",
+    item_id: itemId,
+    title: extractTag(block, "admRulNm") ?? "",
+    agency_name: extractTag(block, "asndOfiNm"),
+    department_name: null,
+    law_kind: extractTag(block, "lsClsNm"),
+    revision_type: null,
+    status: null,
+    date: normalizeDate(extractTag(block, "pntcDt")),
+    notice_no: extractTag(block, "pntcNo"),
+    mapping_id: mappingId,
+    announce_type: announceType,
+    attachment_name: extractTag(block, "FileName"),
+    attachment_url: extractTag(block, "FileDownLink"),
+    original_url: buildDetailUrl({ category: "admin-notice", item_id: itemId, mapping_id: mappingId ?? "0", announce_type: announceType ?? "TYPE6" }, config)
+  };
+}
+
+function mapInterpretationListItem(block: string, config: BundleConfig): LawmakingListItem {
+  const itemId = extractTag(block, "itmSeq") ?? "";
+  return {
+    category: "interpretation",
+    item_id: itemId,
+    title: extractTag(block, "itmNm") ?? "",
+    agency_name: extractTag(block, "lsCptOrgNm"),
+    department_name: null,
+    law_kind: null,
+    revision_type: null,
+    status: extractTag(block, "tgLsNm"),
+    date: null,
+    notice_no: extractTag(block, "itmNo"),
+    mapping_id: null,
+    announce_type: null,
+    attachment_name: null,
+    attachment_url: null,
+    original_url: buildDetailUrl({ category: "interpretation", item_id: itemId }, config)
+  };
+}
+
+function mapExampleListItem(block: string, config: BundleConfig): LawmakingListItem {
+  const itemId = extractTag(block, "caseSeq") ?? "";
+  return {
+    category: "example",
+    item_id: itemId,
+    title: extractTag(block, "caseNm") ?? "",
+    agency_name: extractTag(block, "reqOrgNm"),
+    department_name: extractTag(block, "reqOrgAsndofiNm"),
+    law_kind: null,
+    revision_type: null,
+    status: null,
+    date: normalizeDate(extractTag(block, "cdtDt")),
+    notice_no: extractTag(block, "caseNo"),
+    mapping_id: null,
+    announce_type: null,
+    attachment_name: null,
+    attachment_url: null,
+    original_url: buildDetailUrl({ category: "example", item_id: itemId }, config)
   };
 }
 
@@ -364,6 +499,112 @@ function parseNoticeDetail(block: string): LawmakingDetailResult {
   };
 }
 
+function parseNoticeModDetail(block: string): LawmakingDetailResult {
+  const parsed = parseNoticeDetail(block);
+  return {
+    ...parsed,
+    category: "notice-mod",
+    date: normalizeDate(extractTag(block, "modDt") ?? extractTag(block, "stYd"))
+  };
+}
+
+function parseAdminNoticeDetail(block: string): LawmakingDetailResult {
+  const rawBody = extractTag(block, "admPpCts");
+  const bodyText = stripMarkup(rawBody);
+  return {
+    category: "admin-notice",
+    itemId: extractTag(block, "ogAdmPpSeq") ?? "",
+    mappingId: null,
+    announceType: null,
+    title: extractTag(block, "admRulNm") ?? "",
+    agencyName: extractTag(block, "asndOfiNm"),
+    departmentName: null,
+    lawKind: extractTag(block, "lsClsNm"),
+    revisionType: extractTag(block, "lmTpNm"),
+    status: null,
+    date: normalizeDate(extractTag(block, "stYd")),
+    summaryText: bodyText ? bodyText.slice(0, 500) : null,
+    bodyText,
+    fields: uniqueFields([
+      makeField("공고기관", extractTag(block, "asndOfiNm")),
+      makeField("행정규칙형태", extractTag(block, "lmTpNm")),
+      makeField("행정규칙종류", extractTag(block, "lsClsNm")),
+      makeField("예고시작", extractTag(block, "stYd")),
+      makeField("예고종료", extractTag(block, "edYd")),
+      makeField("전화", extractTag(block, "telNo")),
+      makeField("팩스", extractTag(block, "faxNo")),
+      makeField("이메일", extractTag(block, "email")),
+      makeField("조회수", extractTag(block, "readCnt"))
+    ]),
+    attachments: parseAttachmentsFromHtml(rawBody)
+  };
+}
+
+function parseInterpretationDetail(block: string): LawmakingDetailResult {
+  const sections = extractBlocks(block, "LsItptEmpDetailVo")
+    .map((section) => ({
+      title: extractTag(section, "atcCtsNm") ?? "내용",
+      content: stripMarkup(extractTag(section, "cts"))
+    }))
+    .filter((section) => section.content);
+  const answer = sections.find((section) => section.title === "회답")?.content ?? null;
+  return {
+    category: "interpretation",
+    itemId: "",
+    mappingId: null,
+    announceType: null,
+    title: extractTag(block, "itmNm") ?? "",
+    agencyName: extractTag(block, "reqrOrgNm"),
+    departmentName: null,
+    lawKind: null,
+    revisionType: null,
+    status: extractTag(block, "tgLsNm"),
+    date: normalizeDate(extractTag(block, "rpldocSndDay")),
+    summaryText: answer,
+    bodyText: sections.map((section) => `${section.title}\n${section.content}`).join("\n\n"),
+    fields: uniqueFields([
+      makeField("해석례 번호", extractTag(block, "itmNo")),
+      makeField("요청기관", extractTag(block, "reqrOrgNm")),
+      makeField("대상법령", extractTag(block, "tgLsNm")),
+      makeField("관련조문", extractTag(block, "joCts")),
+      makeField("회답일", extractTag(block, "rpldocSndDay"))
+    ]),
+    attachments: []
+  };
+}
+
+function parseExampleDetail(block: string): LawmakingDetailResult {
+  const sections = extractBlocks(block, "LoLsOrdcasectsVo")
+    .map((section) => ({
+      title: extractTag(section, "ctsCls") ?? "내용",
+      content: stripMarkup(extractTag(section, "cts"))
+    }))
+    .filter((section) => section.content);
+  const answer = sections.find((section) => section.title === "의견")?.content ?? null;
+  return {
+    category: "example",
+    itemId: "",
+    mappingId: null,
+    announceType: null,
+    title: extractTag(block, "caseNm") ?? "",
+    agencyName: extractTag(block, "reqOrgNm"),
+    departmentName: extractTag(block, "reqOrgAsndofiNm"),
+    lawKind: null,
+    revisionType: null,
+    status: null,
+    date: normalizeDate(extractTag(block, "cdtDt")),
+    summaryText: answer,
+    bodyText: sections.map((section) => `${section.title}\n${section.content}`).join("\n\n"),
+    fields: uniqueFields([
+      makeField("사례번호", extractTag(block, "caseNo")),
+      makeField("요청기관", extractTag(block, "reqOrgNm")),
+      makeField("세부기관", extractTag(block, "reqOrgAsndofiNm")),
+      makeField("작성일", extractTag(block, "cdtDt"))
+    ]),
+    attachments: []
+  };
+}
+
 export async function searchLawmakingItemsProvider(input: SearchLawmakingItemsInput, config: BundleConfig): Promise<{ items: LawmakingListItem[]; originalUrl: string }> {
   const requestUrl = buildListUrl(input, config);
   const xml = await fetchXml(requestUrl);
@@ -378,6 +619,14 @@ export async function searchLawmakingItemsProvider(input: SearchLawmakingItemsIn
         return mapPlanListItem(block, config);
       case "notice":
         return mapNoticeListItem(block, config);
+      case "notice-mod":
+        return mapNoticeModListItem(block, config);
+      case "admin-notice":
+        return mapAdminNoticeListItem(block, config);
+      case "interpretation":
+        return mapInterpretationListItem(block, config);
+      case "example":
+        return mapExampleListItem(block, config);
     }
   });
 
@@ -405,11 +654,20 @@ export async function getLawmakingItemDetailProvider(input: GetLawmakingItemDeta
         return parsePlanDetail(block);
       case "notice":
         return parseNoticeDetail(block);
+      case "notice-mod":
+        return parseNoticeModDetail(block);
+      case "admin-notice":
+        return parseAdminNoticeDetail(block);
+      case "interpretation":
+        return parseInterpretationDetail(block);
+      case "example":
+        return parseExampleDetail(block);
     }
   })();
 
   return {
     ...parsed,
+    itemId: input.item_id,
     mappingId: input.mapping_id ?? parsed.mappingId,
     announceType: input.announce_type ?? parsed.announceType,
     originalUrl: requestUrl

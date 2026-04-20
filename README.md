@@ -47,6 +47,13 @@ LAWMAKING_OC=hosung91 kgab get-lawmaking-item-detail --category gov-status --ite
 LAWMAKING_OC=hosung91 kgab search-lawmaking-items --category plan --year 2026 --agency-code 1741000 --limit 5
 LAWMAKING_OC=hosung91 kgab search-lawmaking-items --category notice --agency-code 1741000 --limit 5
 LAWMAKING_OC=hosung91 kgab get-lawmaking-item-detail --category notice --item-id 86344 --mapping-id 2000000319636 --announce-type TYPE5
+LAWMAKING_OC=hosung91 kgab search-lawmaking-items --category notice-mod --agency-code 1741000 --limit 5
+LAWMAKING_OC=hosung91 kgab search-lawmaking-items --category admin-notice --agency-name 행정안전부 --limit 5
+LAWMAKING_OC=hosung91 kgab get-lawmaking-item-detail --category admin-notice --item-id 46444 --mapping-id 2000000325462 --announce-type TYPE6
+LAWMAKING_OC=hosung91 kgab search-lawmaking-items --category interpretation --agency-code 1741000 --limit 5
+LAWMAKING_OC=hosung91 kgab get-lawmaking-item-detail --category interpretation --item-id 444468
+LAWMAKING_OC=hosung91 kgab search-lawmaking-items --category example --query 지방자치 --limit 5
+LAWMAKING_OC=hosung91 kgab get-lawmaking-item-detail --category example --item-id 2026000014
 kgab search-stat-series 기준금리 --source ecos --limit 3
 kgab get-stat-series --source ecos --table 722Y001 --item 0101000 --start 202501 --end 202504
 kgab search-stat-series 총인구 --source kosis --limit 3
@@ -120,6 +127,6 @@ src/
 현재 남은 우선순위는 다음과 같습니다.
 1. KOSIS coverage를 curated catalog에서 자동 catalog/metadata 기반으로 더 넓히기
 2. 공공데이터포털 상세 메타데이터 필드를 더 구조화
-3. 국민참여입법센터 category coverage를 `ogLmPpMod`, `ptcpAdmPp`, `lsItptEmp`, `loLsExample`까지 넓히기
+3. 국민참여입법센터 detail parser를 section-aware summary/attachment 중심으로 더 정교화
 4. cross-source compare / verify 계열 도구 추가
 5. provider별 catalog 자동 생성/동기화

@@ -126,17 +126,19 @@ export interface GetBillDetailResponse extends ToolResponseBase<GetBillDetailInp
   plenary_result: string | null;
 }
 
-export type LawmakingCategory = "gov-status" | "plan" | "notice";
+export type LawmakingCategory = "gov-status" | "plan" | "notice" | "notice-mod" | "admin-notice" | "interpretation" | "example";
 
 export interface SearchLawmakingItemsInput {
   category: LawmakingCategory;
   agency_code?: string;
+  agency_name?: string;
   law_kind_code?: string;
   status_code?: string;
   year?: string;
   start_date?: string;
   end_date?: string;
   query?: string;
+  query_field?: string;
   limit?: number;
 }
 

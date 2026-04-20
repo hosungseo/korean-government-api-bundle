@@ -12,18 +12,20 @@ import { getLawmakingItemDetailProvider, searchLawmakingItemsProvider } from "..
 export const lawmakingTools = [
   {
     name: "search_lawmaking_items",
-    description: "국민참여입법센터의 입법현황, 입법계획, 입법예고 목록을 검색합니다.",
+    description: "국민참여입법센터의 입법현황, 입법계획, 입법예고, 행정예고, 법령해석례, 의견제시사례 목록을 검색합니다.",
     inputSchema: {
       type: "object",
       properties: {
-        category: { type: "string", description: "gov-status | plan | notice" },
+        category: { type: "string", description: "gov-status | plan | notice | notice-mod | admin-notice | interpretation | example" },
         agency_code: { type: "string", description: "소관부처 코드" },
+        agency_name: { type: "string", description: "기관명, 예: 행정안전부" },
         law_kind_code: { type: "string", description: "법령종류 코드" },
         status_code: { type: "string", description: "진행단계 코드 또는 공고상태 코드" },
         year: { type: "string", description: "입법계획 연도, 예: 2026" },
         start_date: { type: "string", description: "YYYY-MM-DD 또는 YYYY.MM.DD" },
         end_date: { type: "string", description: "YYYY-MM-DD 또는 YYYY.MM.DD" },
         query: { type: "string", description: "법령명 또는 검색어" },
+        query_field: { type: "string", description: "example category 검색 필드, 기본값 caseNm" },
         limit: { type: "number", description: "최대 결과 수" }
       },
       required: ["category"]
@@ -35,10 +37,10 @@ export const lawmakingTools = [
     inputSchema: {
       type: "object",
       properties: {
-        category: { type: "string", description: "gov-status | plan | notice" },
+        category: { type: "string", description: "gov-status | plan | notice | notice-mod | admin-notice | interpretation | example" },
         item_id: { type: "string", description: "목록 응답의 item_id" },
-        mapping_id: { type: "string", description: "입법예고 상세 조회용 mapping_id" },
-        announce_type: { type: "string", description: "입법예고 상세 조회용 announce_type" }
+        mapping_id: { type: "string", description: "입법예고/행정예고 상세 조회용 mapping_id" },
+        announce_type: { type: "string", description: "입법예고/행정예고 상세 조회용 announce_type" }
       },
       required: ["category", "item_id"]
     }
@@ -46,8 +48,8 @@ export const lawmakingTools = [
 ] as const;
 
 export async function searchLawmakingItemsTool(input: SearchLawmakingItemsInput): Promise<SearchLawmakingItemsResponse> {
-  if (!["gov-status", "plan", "notice"].includes(input.category)) {
-    throw new InputError("category must be one of gov-status, plan, notice");
+  if (!["gov-status", "plan", "notice", "notice-mod", "admin-notice", "interpretation", "example"].includes(input.category)) {
+    throw new InputError("category must be one of gov-status, plan, notice, notice-mod, admin-notice, interpretation, example");
   }
 
   const config = loadConfig();
@@ -69,16 +71,16 @@ export async function searchLawmakingItemsTool(input: SearchLawmakingItemsInput)
 }
 
 export async function getLawmakingItemDetailTool(input: GetLawmakingItemDetailInput): Promise<GetLawmakingItemDetailResponse> {
-  if (!["gov-status", "plan", "notice"].includes(input.category)) {
-    throw new InputError("category must be one of gov-status, plan, notice");
+  if (!["gov-status", "plan", "notice", "notice-mod", "admin-notice", "interpretation", "example"].includes(input.category)) {
+    throw new InputError("category must be one of gov-status, plan, notice, notice-mod, admin-notice, interpretation, example");
   }
 
   if (!input.item_id?.trim()) {
     throw new InputError("item_id is required for get_lawmaking_item_detail");
   }
 
-  if (input.category === "notice" && (!input.mapping_id?.trim() || !input.announce_type?.trim())) {
-    throw new InputError("mapping_id and announce_type are required for notice detail");
+  if (["notice", "notice-mod", "admin-notice"].includes(input.category) && (!input.mapping_id?.trim() || !input.announce_type?.trim())) {
+    throw new InputError("mapping_id and announce_type are required for notice, notice-mod, and admin-notice detail");
   }
 
   const config = loadConfig();

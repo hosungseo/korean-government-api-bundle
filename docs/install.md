@@ -41,6 +41,13 @@ LAWMAKING_OC=hosung91 node dist/cli/index.js get-lawmaking-item-detail --categor
 LAWMAKING_OC=hosung91 node dist/cli/index.js search-lawmaking-items --category plan --year 2026 --agency-code 1741000 --limit 5
 LAWMAKING_OC=hosung91 node dist/cli/index.js search-lawmaking-items --category notice --agency-code 1741000 --limit 5
 LAWMAKING_OC=hosung91 node dist/cli/index.js get-lawmaking-item-detail --category notice --item-id 86344 --mapping-id 2000000319636 --announce-type TYPE5
+LAWMAKING_OC=hosung91 node dist/cli/index.js search-lawmaking-items --category notice-mod --agency-code 1741000 --limit 5
+LAWMAKING_OC=hosung91 node dist/cli/index.js search-lawmaking-items --category admin-notice --agency-name 행정안전부 --limit 5
+LAWMAKING_OC=hosung91 node dist/cli/index.js get-lawmaking-item-detail --category admin-notice --item-id 46444 --mapping-id 2000000325462 --announce-type TYPE6
+LAWMAKING_OC=hosung91 node dist/cli/index.js search-lawmaking-items --category interpretation --agency-code 1741000 --limit 5
+LAWMAKING_OC=hosung91 node dist/cli/index.js get-lawmaking-item-detail --category interpretation --item-id 444468
+LAWMAKING_OC=hosung91 node dist/cli/index.js search-lawmaking-items --category example --query 지방자치 --limit 5
+LAWMAKING_OC=hosung91 node dist/cli/index.js get-lawmaking-item-detail --category example --item-id 2026000014
 node dist/cli/index.js search-stat-series 기준금리 --source ecos --limit 3
 ECOS_API_KEY=your_key_here node dist/cli/index.js get-stat-series --source ecos --table 722Y001 --item 0101000 --start 202501 --end 202504
 node dist/cli/index.js search-stat-series 총인구 --source kosis --limit 3
@@ -58,4 +65,4 @@ npm run mcp
 ## 현재 구현 범위 주의
 지금은 `search_law`, `get_law_text`, `search_bill`, `get_bill_detail`, `search_lawmaking_items`, `get_lawmaking_item_detail`, `search_stat_series`, `get_stat_series`, `search_public_dataset`, `get_dataset_metadata`가 실제 동작합니다.
 통계 축은 ECOS 전체와 KOSIS demographic slice 확장본까지 동작합니다. KOSIS table-selection 조회는 `KOSIS_API_KEY`가 있어야 합니다.
-국민참여입법센터 축은 현재 `gov-status`, `plan`, `notice` 3개 category를 우선 지원합니다.
+국민참여입법센터 축은 현재 `gov-status`, `plan`, `notice`, `notice-mod`, `admin-notice`, `interpretation`, `example` category를 지원합니다.

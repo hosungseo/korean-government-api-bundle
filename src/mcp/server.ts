@@ -17,9 +17,9 @@ export async function runTool(name: string, input: unknown): Promise<unknown> {
     case "get_bill_detail":
       return getBillDetailTool(input as { bill_no?: string; bill_id?: string });
     case "search_lawmaking_items":
-      return searchLawmakingItemsTool(input as { category: "gov-status" | "plan" | "notice"; agency_code?: string; law_kind_code?: string; status_code?: string; year?: string; start_date?: string; end_date?: string; query?: string; limit?: number });
+      return searchLawmakingItemsTool(input as { category: "gov-status" | "plan" | "notice" | "notice-mod" | "admin-notice" | "interpretation" | "example"; agency_code?: string; agency_name?: string; law_kind_code?: string; status_code?: string; year?: string; start_date?: string; end_date?: string; query?: string; query_field?: string; limit?: number });
     case "get_lawmaking_item_detail":
-      return getLawmakingItemDetailTool(input as { category: "gov-status" | "plan" | "notice"; item_id: string; mapping_id?: string; announce_type?: string });
+      return getLawmakingItemDetailTool(input as { category: "gov-status" | "plan" | "notice" | "notice-mod" | "admin-notice" | "interpretation" | "example"; item_id: string; mapping_id?: string; announce_type?: string });
     case "search_stat_series":
       return searchStatSeriesTool(input as { query: string; source?: "ecos" | "kosis" | "all"; limit?: number });
     case "get_stat_series":
