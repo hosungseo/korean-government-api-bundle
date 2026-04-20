@@ -27,6 +27,8 @@
 - `law-text`
 - `bill-search`
 - `bill-detail`
+- `lawmaking-search`
+- `lawmaking-detail`
 - `member-search`
 - `stat-search`
 - `stat-series`
@@ -43,6 +45,7 @@
 - 법령명
 - MST / 법령 ID
 - 의안번호 / BILL_ID
+- 국민참여입법센터 category / item_id / mapping_id / announce_type
 - 의원명 / 위원회명
 - 통계표코드 / 항목코드
 - dataset id / service id
@@ -53,6 +56,7 @@ intent와 entity를 바탕으로 provider 후보를 점수화한다.
 
 예:
 - bill_no가 있으면 `열린국회정보` 점수 최상위
+- lawmaking category + item_id가 있으면 `국민참여입법센터` 점수 최상위
 - MST가 있으면 `법제처` 점수 최상위
 - table_id + item_code면 `ECOS` 또는 `KOSIS`
 - dataset/service id면 `공공데이터포털`
@@ -87,12 +91,14 @@ intent와 entity를 바탕으로 provider 후보를 점수화한다.
 질문 안의 단어로 domain 가중치 부여
 - 법령, 조문, 시행령 → law
 - 법안, 의안, 위원회 → assembly
+- 입법현황, 입법예고, 행정예고, 법령해석례, 의견제시사례 → lawmaking
 - 통계, 시계열, 금리, CPI → stats
 - 데이터셋, 공공데이터포털 → dataset
 
 ### provider-specific vocabulary
 provider 고유 어휘를 보면 추가 가중치
 - `본회의`, `행안위`, `의안번호` → assembly
+- `법제처심사`, `입법예고`, `행정예고`, `의견제시`, `해석례` → lawmaking
 - `공포`, `시행`, `조문` → law
 - `통계표코드`, `항목코드` → ecos/kosis
 
@@ -130,6 +136,24 @@ provider 고유 어휘를 보면 추가 가중치
 - route:
   - `BILLINFODETAIL` + `BPMBILLSUMMARY`
   - 필요 시 `ALLBILL`로 상태 보강
+
+### `search_lawmaking_items`
+- primary provider: 국민참여입법센터 정보공개활용
+- route:
+  - explicit `category`가 있으면 해당 endpoint 고정
+  - `입법현황`, `법제처심사`, `추진현황` → `gov-status`
+  - `입법계획`, `정부입법계획` → `plan`
+  - `입법예고` → `notice` 또는 `notice-mod`
+  - `행정예고` → `admin-notice`
+  - `법령해석례` → `interpretation`
+  - `의견제시사례` → `example`
+
+### `get_lawmaking_item_detail`
+- primary provider: 국민참여입법센터 정보공개활용
+- route:
+  - `category + item_id` direct hit
+  - notice / admin-notice 계열은 `mapping_id + announce_type`까지 함께 사용
+  - rich HTML 본문은 readable text + section-aware summary로 정규화
 
 ### `search_stat_series`
 - primary providers: ECOS, KOSIS

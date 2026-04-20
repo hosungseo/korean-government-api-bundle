@@ -66,14 +66,74 @@
 - `bill_no`
 - `bill_id`
 - `bill_name`
-- `summary`
+- `summary_text`
 - `timeline`
 - `plenary_result`
 - `original_url`
 
 ---
 
-## 5. search_stat_series
+## 5. search_lawmaking_items
+### input
+- `category: "gov-status" | "plan" | "notice" | "notice-mod" | "admin-notice" | "interpretation" | "example"`
+- `agency_code?: string`
+- `agency_name?: string`
+- `law_kind_code?: string`
+- `status_code?: string`
+- `year?: string`
+- `start_date?: string`
+- `end_date?: string`
+- `query?: string`
+- `query_field?: string`
+- `limit?: number`
+
+### output
+- `items[].category`
+- `items[].item_id`
+- `items[].title`
+- `items[].agency_name`
+- `items[].department_name`
+- `items[].law_kind`
+- `items[].revision_type`
+- `items[].status`
+- `items[].date`
+- `items[].notice_no`
+- `items[].mapping_id`
+- `items[].announce_type`
+- `items[].attachment_name`
+- `items[].attachment_url`
+- `items[].original_url`
+
+---
+
+## 6. get_lawmaking_item_detail
+### input
+- `category: "gov-status" | "plan" | "notice" | "notice-mod" | "admin-notice" | "interpretation" | "example"`
+- `item_id: string`
+- `mapping_id?: string`
+- `announce_type?: string`
+
+### output
+- `category`
+- `item_id`
+- `mapping_id`
+- `announce_type`
+- `title`
+- `agency_name`
+- `department_name`
+- `law_kind`
+- `revision_type`
+- `status`
+- `date`
+- `summary_text`
+- `body_text`
+- `fields[]`
+- `attachments[]`
+- `original_url`
+
+---
+
+## 7. search_stat_series
 ### input
 - `query: string`
 - `source?: "ecos" | "kosis" | "all"`
@@ -90,11 +150,15 @@
 
 ---
 
-## 6. get_stat_series
+## 8. get_stat_series
 ### input
 - `source: "ecos" | "kosis"`
 - `table_id: string`
 - `item_code?: string`
+- `org_id?: string`
+- `obj_l1?: string`
+- `obj_l2?: string`
+- `obj_l3?: string`
 - `start: string`
 - `end: string`
 
@@ -109,7 +173,7 @@
 
 ---
 
-## 7. search_public_dataset
+## 9. search_public_dataset
 ### input
 - `query: string`
 - `limit?: number`
@@ -124,14 +188,14 @@
 
 ---
 
-## 8. get_dataset_metadata
+## 10. get_dataset_metadata
 ### input
 - `dataset_id?: string`
 - `service_id?: string`
 
 ### output
 - `title`
-- `provider`
+- `dataset_provider`
 - `description`
 - `format`
 - `api_available`

@@ -81,7 +81,64 @@
 
 ---
 
-## 5. `search_stat_series`
+## 5. `search_lawmaking_items`
+
+### external tool purpose
+- 국민참여입법센터 정보공개활용 목록 검색
+
+### internal providers
+- 국민참여입법센터 정보공개활용
+
+### internal endpoints
+- `govLmSts`
+- `lmPln`
+- `ogLmPp`
+- `ogLmPpMod`
+- `ptcpAdmPp`
+- `lsItptEmp`
+- `loLsExample`
+
+### routing rule
+- `category`에 따라 endpoint 고정
+- `gov-status` → 입법현황
+- `plan` → 입법계획
+- `notice` / `notice-mod` → 입법예고
+- `admin-notice` → 행정예고
+- `interpretation` → 법령해석례
+- `example` → 의견제시사례
+
+### notes
+- category별로 허용 필터가 다르므로 provider 내부에서 query param 조합
+- `agency_code`와 `agency_name`을 category에 따라 다르게 사용
+
+---
+
+## 6. `get_lawmaking_item_detail`
+
+### external tool purpose
+- 국민참여입법센터 정보공개활용 상세 조회
+
+### internal providers
+- 국민참여입법센터 정보공개활용
+
+### internal endpoints
+- `govLmSts/{lbicId}`
+- `lmPln/{lmPlnSeq}`
+- `ogLmPp/{ogLmPpSeq}/{mappingLbicId}/{announceType}`
+- `ogLmPpMod/{ogLmPpSeq}/{mappingLbicId}/{announceType}`
+- `ptcpAdmPp/{ogAdmPpSeq}/{mappingAdmRulSeq}/{announceType}`
+- `lsItptEmp/{itmSeq}`
+- `loLsExample/{caseSeq}`
+
+### orchestration
+1. `category`에 따라 상세 path shape 결정
+2. notice / admin-notice 계열은 `mapping_id`, `announce_type`가 추가로 필요
+3. rich HTML detail body는 readable text + section-aware summary로 정규화
+4. generic portal root link는 attachment에서 제거
+
+---
+
+## 7. `search_stat_series`
 
 ### external tool purpose
 - 통계 시계열 후보 검색
@@ -97,7 +154,7 @@
 
 ---
 
-## 6. `get_stat_series`
+## 8. `get_stat_series`
 
 ### external tool purpose
 - 특정 통계 시계열 값 조회
@@ -116,7 +173,7 @@
 
 ---
 
-## 7. `search_public_dataset`
+## 9. `search_public_dataset`
 
 ### external tool purpose
 - 공공데이터포털 데이터셋 검색
@@ -132,7 +189,7 @@
 
 ---
 
-## 8. `get_dataset_metadata`
+## 10. `get_dataset_metadata`
 
 ### external tool purpose
 - 특정 데이터셋 메타데이터 상세 조회
@@ -160,6 +217,11 @@
 - `search_case`
 - `search_interpretation`
 - `get_historical_law_text`
+
+### lawmaking extension
+- category-specific compare / watch tools
+- attachment-first parser for 예고문 원문 파일
+- notice/example summarization hardening
 
 ### cross-source extension
 - `compare_stat_series`

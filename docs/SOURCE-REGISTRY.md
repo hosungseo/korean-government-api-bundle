@@ -53,7 +53,35 @@
   - `get_bill_meeting_records`
   - 표결 / 청원 / 국정감사 / 예결 / 인사청문 계열
 
-### 3. 한국은행 ECOS
+### 3. 국민참여입법센터 정보공개활용
+- role: 입법현황 / 입법계획 / 입법예고 / 행정예고 / 법령해석례 / 의견제시사례 조회
+- connected scope:
+  - `govLmSts`
+  - `lmPln`
+  - `ogLmPp`, `ogLmPpMod`
+  - `ptcpAdmPp`
+  - `lsItptEmp`
+  - `loLsExample`
+- primary intents:
+  - lawmaking-search
+  - lawmaking-detail
+- planned tools:
+  - `search_lawmaking_items`
+  - `get_lawmaking_item_detail`
+- current category surface:
+  - `gov-status`
+  - `plan`
+  - `notice`
+  - `notice-mod`
+  - `admin-notice`
+  - `interpretation`
+  - `example`
+- future expansion:
+  - attachment-first parsing
+  - category-specific compare/watch tools
+  - digest / summarization helpers
+
+### 4. 한국은행 ECOS
 - role: 경제통계 시계열 조회
 - connected scope:
   - `StatisticSearch`
@@ -65,7 +93,7 @@
   - `search_stat_series`
   - `get_stat_series`
 
-### 4. KOSIS 국가통계포털
+### 5. KOSIS 국가통계포털
 - role: 국가통계 시계열 / 항목 기반 조회
 - connected scope:
   - 국가통계포털 OpenAPI 전반
@@ -76,7 +104,7 @@
   - `search_stat_series`
   - `get_stat_series`
 
-### 5. 공공데이터포털
+### 6. 공공데이터포털
 - role: 데이터셋 메타데이터 / API 제공 여부 / 형식 식별
 - connected scope:
   - dataset metadata / catalog 계열
