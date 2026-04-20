@@ -1,0 +1,2 @@
+// MCP server placeholder
+export {};

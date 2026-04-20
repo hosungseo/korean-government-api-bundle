@@ -1,0 +1,12 @@
+{
+  "name": "korean-government-api-bundle",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Question-first MCP + CLI bundle for Korean government public APIs",
+  "type": "module",
+  "scripts": {
+    "build": "echo 'build placeholder'",
+    "dev": "echo 'dev placeholder'",
+    "lint": "echo 'lint placeholder'"
+  }
+}
