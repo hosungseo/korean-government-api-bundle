@@ -4,7 +4,31 @@
 
 ---
 
-## 1. `search_law`
+## 1. `resolve_source_bundle`
+
+### external tool purpose
+- 자연어 질문을 적절한 MCP tool/provider surface로 먼저 라우팅
+
+### internal providers
+- bundle matching layer
+- provider registry
+
+### internal endpoints
+- 없음, local routing only
+
+### orchestration
+1. query normalization
+2. identifier / keyword / fallback 기반 intent 분류
+3. provider scoring
+4. recommended tool + alternatives 반환
+
+### notes
+- 실제 외부 API 호출 전의 pre-routing surface
+- 현재는 tool/provider recommendation 중심, 이후 tool argument suggestion으로 확장 가능
+
+---
+
+## 2. `search_law`
 
 ### external tool purpose
 - 법령명 / 키워드로 법령 검색
@@ -21,7 +45,7 @@
 
 ---
 
-## 2. `get_law_text`
+## 3. `get_law_text`
 
 ### external tool purpose
 - 특정 법령 원문 또는 특정 조문 조회
@@ -42,7 +66,7 @@
 
 ---
 
-## 3. `search_bill`
+## 4. `search_bill`
 
 ### external tool purpose
 - 의안번호 / 의안명 / 제안자 / 위원회 기준 법안 검색
@@ -60,7 +84,7 @@
 
 ---
 
-## 4. `get_bill_detail`
+## 5. `get_bill_detail`
 
 ### external tool purpose
 - 특정 법안의 상태, 타임라인, 요약 조회
@@ -81,7 +105,7 @@
 
 ---
 
-## 5. `search_lawmaking_items`
+## 6. `search_lawmaking_items`
 
 ### external tool purpose
 - 국민참여입법센터 정보공개활용 목록 검색
@@ -113,7 +137,7 @@
 
 ---
 
-## 6. `get_lawmaking_item_detail`
+## 7. `get_lawmaking_item_detail`
 
 ### external tool purpose
 - 국민참여입법센터 정보공개활용 상세 조회
@@ -138,7 +162,7 @@
 
 ---
 
-## 7. `search_gazette_items`
+## 8. `search_gazette_items`
 
 ### external tool purpose
 - 관보 공고/고시/입법예고 항목 검색
@@ -160,7 +184,7 @@
 
 ---
 
-## 8. `search_stat_series`
+## 9. `search_stat_series`
 
 ### external tool purpose
 - 통계 시계열 후보 검색
@@ -176,7 +200,7 @@
 
 ---
 
-## 9. `get_stat_series`
+## 10. `get_stat_series`
 
 ### external tool purpose
 - 특정 통계 시계열 값 조회
@@ -195,7 +219,7 @@
 
 ---
 
-## 10. `compare_stat_series`
+## 11. `compare_stat_series`
 
 ### external tool purpose
 - 두 통계 시계열을 공통 시점으로 정렬해 차이와 비율을 비교
@@ -217,7 +241,7 @@
 
 ---
 
-## 11. `search_public_dataset`
+## 12. `search_public_dataset`
 
 ### external tool purpose
 - 공공데이터포털 데이터셋 검색
@@ -233,7 +257,7 @@
 
 ---
 
-## 12. `get_dataset_metadata`
+## 13. `get_dataset_metadata`
 
 ### external tool purpose
 - 특정 데이터셋 메타데이터 상세 조회

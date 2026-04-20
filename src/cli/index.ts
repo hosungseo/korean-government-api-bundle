@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { getBillDetailTool, searchBillTool } from "../mcp/tools/assembly.js";
+import { resolveSourceBundleTool } from "../mcp/tools/bundle.js";
 import { getDatasetMetadataTool, searchPublicDatasetTool } from "../mcp/tools/dataset.js";
 import { getLawTextTool, searchLawTool } from "../mcp/tools/law.js";
 import { getLawmakingItemDetailTool, searchLawmakingItemsTool } from "../mcp/tools/lawmaking.js";
@@ -11,6 +12,7 @@ function printUsage(): void {
   console.log(`Usage:
   kgab search-law <query> [--limit N]
   kgab search_law <query> [--limit N]
+  kgab resolve-source-bundle <query>
   kgab get-law-text --mst <MST> [--article 제1조]
   kgab get-law-text --law-name <법령명> [--article 제1조]
   kgab search-bill --bill-no <의안번호>
@@ -79,6 +81,13 @@ async function main(): Promise<void> {
     const queryParts = rest.filter((arg, index) => !(arg === "--limit" || rest[index - 1] === "--limit"));
     const query = queryParts.join(" ").trim();
     const result = await searchLawTool({ query, limit });
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  if (command === "resolve-source-bundle" || command === "resolve_source_bundle") {
+    const query = rest.join(" ").trim();
+    const result = await resolveSourceBundleTool({ query });
     console.log(JSON.stringify(result, null, 2));
     return;
   }

@@ -173,6 +173,18 @@ provider 고유 어휘를 보면 추가 가중치
   - `law_name` → `lawNmSearch`
   - 날짜 미지정 시 최근 기간 기본값 적용
 
+### `resolve_source_bundle`
+- primary provider: bundle matching layer
+- route:
+  - 7~8자리 숫자 + 법안 표현 → `search_bill`
+  - `MST=` 식별자 → `get_law_text`
+  - 입법현황/입법예고/행정예고/해석례 → `search_lawmaking_items`
+  - 관보/정호/호외/고시/공고 → `search_gazette_items`
+  - 통계 identifier 2개 이상 또는 비교 표현 + identifier → `compare_stat_series`
+  - 통계/시계열 어휘 → `search_stat_series`
+  - 데이터셋/API catalog 어휘 → `search_public_dataset`
+  - 그 외는 `search_law` fallback
+
 ### `search_stat_series`
 - primary providers: ECOS, KOSIS
 - route:

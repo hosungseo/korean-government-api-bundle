@@ -1,16 +1,19 @@
 import { getLawTextTool, searchLawTool, lawTools } from "./tools/law.js";
 import { assemblyTools, getBillDetailTool, searchBillTool } from "./tools/assembly.js";
+import { bundleTools, resolveSourceBundleTool } from "./tools/bundle.js";
 import { getLawmakingItemDetailTool, lawmakingTools, searchLawmakingItemsTool } from "./tools/lawmaking.js";
 import { gazetteTools, searchGazetteItemsTool } from "./tools/gazette.js";
 import { compareStatSeriesTool, getStatSeriesTool, searchStatSeriesTool, statTools } from "./tools/stats.js";
 import { datasetTools, getDatasetMetadataTool, searchPublicDatasetTool } from "./tools/dataset.js";
 
-export const toolCatalog = [...lawTools, ...assemblyTools, ...lawmakingTools, ...gazetteTools, ...statTools, ...datasetTools];
+export const toolCatalog = [...bundleTools, ...lawTools, ...assemblyTools, ...lawmakingTools, ...gazetteTools, ...statTools, ...datasetTools];
 
 export async function runTool(name: string, input: unknown): Promise<unknown> {
   switch (name) {
     case "search_law":
       return searchLawTool(input as { query: string; limit?: number });
+    case "resolve_source_bundle":
+      return resolveSourceBundleTool(input as { query: string });
     case "get_law_text":
       return getLawTextTool(input as { law_name?: string; mst?: string; article_ref?: string });
     case "search_bill":

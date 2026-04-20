@@ -227,6 +227,24 @@ export interface SearchGazetteItemsResponse extends ToolResponseBase<SearchGazet
   items: GazetteListItem[];
 }
 
+export interface ResolveSourceBundleInput {
+  query: string;
+}
+
+export interface BundleResolvedEntity {
+  label: string;
+  value: string;
+}
+
+export interface ResolveSourceBundleResponse extends ToolResponseBase<ResolveSourceBundleInput> {
+  intent: BundleIntent;
+  recommended_provider_id: string;
+  recommended_provider: string;
+  recommended_tool: string;
+  reasoning: string;
+  entities: BundleResolvedEntity[];
+}
+
 export interface SearchStatSeriesInput {
   query: string;
   source?: "ecos" | "kosis" | "all";

@@ -19,6 +19,7 @@
 ## 어떤 일을 하게 될까
 | Tool | 설명 | 사용자 로그인 |
 | --- | --- | --- |
+| `resolve_source_bundle` | 질문을 어떤 tool/provider로 보낼지 먼저 판별 | 불필요 |
 | `search_law` | 법령명/키워드로 법령 검색 | 불필요 |
 | `get_law_text` | 법령 원문 또는 조문 조회 | 불필요 |
 | `search_bill` | 의안번호/의안명/제안자/위원회 기준 법안 검색 | 불필요 |
@@ -41,6 +42,9 @@
 
 ### CLI
 ```bash
+kgab resolve-source-bundle "2207018 법안 상태"
+kgab resolve-source-bundle "행정안전부 입법예고"
+kgab resolve-source-bundle "기준금리와 주택담보대출금리 비교 ecos:722Y001:0101000 ecos:121Y006:BECBLA01"
 kgab search-law "행정기본법" --limit 3
 kgab get-law-text --law-name 행정기본법 --article 제1조
 kgab search-bill --bill-no 2207018
@@ -73,7 +77,7 @@ kgab get-dataset-metadata --dataset-id 15108065
 1. 저장소 구조와 문서를 먼저 읽습니다.
 2. `docs/setup.md`와 `docs/security-and-secrets.md`를 확인합니다.
 3. provider registry와 matching 구조를 확인합니다.
-4. `kgab search-law "행정기본법" --limit 3`, `kgab get-law-text --law-name 행정기본법 --article 제1조`, `kgab search-bill --bill-no 2207018`, `kgab search-stat-series 기준금리 --source ecos --limit 3`, `kgab search-public-dataset 주민등록 인구 --limit 5`로 working tool을 테스트합니다.
+4. `kgab resolve-source-bundle "2207018 법안 상태"`, `kgab search-law "행정기본법" --limit 3`, `kgab get-law-text --law-name 행정기본법 --article 제1조`, `kgab search-bill --bill-no 2207018`, `kgab search-stat-series 기준금리 --source ecos --limit 3`, `kgab search-public-dataset 주민등록 인구 --limit 5`로 working tool을 테스트합니다.
 
 ## Design principles
 - provider-first가 아니라 **question-first tools**
@@ -112,20 +116,21 @@ src/
 초기 설계 단계에서 **첫 working slice**까지 진입했습니다.
 
 현재 구현된 것:
-1. provider registry 코드화
-2. config loader 추가
-3. law/bill/stat resolver 골격 추가
-4. 법제처 adapter 기반 `search_law` CLI/MCP 진입점 구현
-5. `law_name → MST resolve → lawService` 흐름의 `get_law_text` 구현
-6. 열린국회정보 기반 `search_bill` 구현
-7. `bill_no → BILL_ID resolve → BILLINFODETAIL + BPMBILLSUMMARY` 흐름의 `get_bill_detail` 구현
-8. 국민참여입법센터 기반 `search_lawmaking_items`, `get_lawmaking_item_detail` 구현
-9. 행정안전부 관보 API 기반 `search_gazette_items` 구현
-10. ECOS 기반 `search_stat_series` 구현
-11. ECOS 기반 `get_stat_series` 구현
-12. KOSIS demographic slice 확장 기반 `search_stat_series`, `get_stat_series` 구현
-13. `compare_stat_series` 구현
-14. 공공데이터포털 기반 `search_public_dataset`, `get_dataset_metadata` 구현
+1. bundle-level `resolve_source_bundle` 구현
+2. provider registry 코드화
+3. config loader 추가
+4. law/bill/stat resolver 골격 추가
+5. 법제처 adapter 기반 `search_law` CLI/MCP 진입점 구현
+6. `law_name → MST resolve → lawService` 흐름의 `get_law_text` 구현
+7. 열린국회정보 기반 `search_bill` 구현
+8. `bill_no → BILL_ID resolve → BILLINFODETAIL + BPMBILLSUMMARY` 흐름의 `get_bill_detail` 구현
+9. 국민참여입법센터 기반 `search_lawmaking_items`, `get_lawmaking_item_detail` 구현
+10. 행정안전부 관보 API 기반 `search_gazette_items` 구현
+11. ECOS 기반 `search_stat_series` 구현
+12. ECOS 기반 `get_stat_series` 구현
+13. KOSIS demographic slice 확장 기반 `search_stat_series`, `get_stat_series` 구현
+14. `compare_stat_series` 구현
+15. 공공데이터포털 기반 `search_public_dataset`, `get_dataset_metadata` 구현
 
 현재 구조는 아래 3층을 기준으로 움직입니다.
 1. raw provider adapters
@@ -133,9 +138,10 @@ src/
 3. MCP + CLI tool surface
 
 현재 남은 우선순위는 다음과 같습니다.
-1. KOSIS coverage를 curated catalog에서 자동 catalog/metadata 기반으로 더 넓히기
-2. 공공데이터포털 상세 메타데이터 필드를 더 구조화
-3. 국민참여입법센터 detail parser를 section-aware summary/attachment 중심으로 더 정교화
-4. 관보 source를 detail / personnel 특화 API까지 확장
-5. compare / verify 계열을 lawmaking / dataset 쪽으로 확장
-6. provider별 catalog 자동 생성/동기화
+1. `resolve_source_bundle`를 tool argument suggestion까지 확장
+2. KOSIS coverage를 curated catalog에서 자동 catalog/metadata 기반으로 더 넓히기
+3. 공공데이터포털 상세 메타데이터 필드를 더 구조화
+4. 국민참여입법센터 detail parser를 section-aware summary/attachment 중심으로 더 정교화
+5. 관보 source를 detail / personnel 특화 API까지 확장
+6. compare / verify 계열을 lawmaking / dataset 쪽으로 확장
+7. provider별 catalog 자동 생성/동기화

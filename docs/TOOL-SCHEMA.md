@@ -7,7 +7,22 @@
 
 ---
 
-## 1. search_law
+## 1. resolve_source_bundle
+### input
+- `query: string`
+
+### output
+- `intent`
+- `recommended_provider_id`
+- `recommended_provider`
+- `recommended_tool`
+- `reasoning`
+- `entities[]`
+- `alternatives[]`
+
+---
+
+## 2. search_law
 ### input
 - `query: string`
 - `limit?: number`
@@ -23,7 +38,7 @@
 
 ---
 
-## 2. get_law_text
+## 3. get_law_text
 ### input
 - `law_name?: string`
 - `mst?: string`
@@ -38,7 +53,7 @@
 
 ---
 
-## 3. search_bill
+## 4. search_bill
 ### input
 - `bill_no?: string`
 - `bill_name?: string`
@@ -57,7 +72,7 @@
 
 ---
 
-## 4. get_bill_detail
+## 5. get_bill_detail
 ### input
 - `bill_no?: string`
 - `bill_id?: string`
@@ -73,7 +88,7 @@
 
 ---
 
-## 5. search_lawmaking_items
+## 6. search_lawmaking_items
 ### input
 - `category: "gov-status" | "plan" | "notice" | "notice-mod" | "admin-notice" | "interpretation" | "example"`
 - `agency_code?: string`
@@ -106,7 +121,7 @@
 
 ---
 
-## 6. get_lawmaking_item_detail
+## 7. get_lawmaking_item_detail
 ### input
 - `category: "gov-status" | "plan" | "notice" | "notice-mod" | "admin-notice" | "interpretation" | "example"`
 - `item_id: string`
@@ -133,7 +148,7 @@
 
 ---
 
-## 7. search_gazette_items
+## 8. search_gazette_items
 ### input
 - `query?: string`
 - `agency_name?: string`
@@ -156,7 +171,7 @@
 
 ---
 
-## 8. search_stat_series
+## 9. search_stat_series
 ### input
 - `query: string`
 - `source?: "ecos" | "kosis" | "all"`
@@ -173,7 +188,7 @@
 
 ---
 
-## 9. get_stat_series
+## 10. get_stat_series
 ### input
 - `source: "ecos" | "kosis"`
 - `table_id: string`
@@ -196,7 +211,7 @@
 
 ---
 
-## 10. compare_stat_series
+## 11. compare_stat_series
 ### input
 - `series_a_identifier: string`
 - `series_b_identifier: string`
@@ -226,7 +241,7 @@
 
 ---
 
-## 11. search_public_dataset
+## 12. search_public_dataset
 ### input
 - `query: string`
 - `limit?: number`
@@ -241,7 +256,7 @@
 
 ---
 
-## 12. get_dataset_metadata
+## 13. get_dataset_metadata
 ### input
 - `dataset_id?: string`
 - `service_id?: string`
