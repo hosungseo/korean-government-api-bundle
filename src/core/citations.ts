@@ -14,6 +14,10 @@ export function buildBillIdentifier(billId: string | null, billNo: string | null
   return "bill:search";
 }
 
+export function buildStatIdentifier(source: string, tableId: string, itemCode?: string | null): string {
+  return itemCode ? `${source}:${tableId}:${itemCode}` : `${source}:${tableId}`;
+}
+
 export function nowIso(): string {
   return new Date().toISOString();
 }

@@ -2,6 +2,7 @@
 
 import { getBillDetailTool, searchBillTool } from "../mcp/tools/assembly.js";
 import { getLawTextTool, searchLawTool } from "../mcp/tools/law.js";
+import { getStatSeriesTool, searchStatSeriesTool } from "../mcp/tools/stats.js";
 
 function printUsage(): void {
   console.log(`Usage:
@@ -13,6 +14,8 @@ function printUsage(): void {
   kgab search-bill --bill-name <의안명> [--committee <위원회>] [--age <제22대>] [--limit N]
   kgab get-bill-detail --bill-no <의안번호>
   kgab get-bill-detail --bill-id <BILL_ID>
+  kgab search-stat-series <query> [--source ecos|kosis|all] [--limit N]
+  kgab get-stat-series --source ecos --table <STAT_CODE> [--item <ITEM_CODE>] --start YYYYMM --end YYYYMM
   kgab mcp --list-tools
   kgab mcp run <tool_name> '<json>'`);
 }
@@ -96,6 +99,27 @@ async function main(): Promise<void> {
     const billNo = parseOption(rest, "--bill-no");
     const billId = parseOption(rest, "--bill-id");
     const result = await getBillDetailTool({ bill_no: billNo, bill_id: billId });
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  if (command === "search-stat-series" || command === "search_stat_series") {
+    const limit = parseLimit(rest);
+    const source = parseOption(rest, "--source") as "ecos" | "kosis" | "all" | undefined;
+    const queryParts = rest.filter((arg, index) => !["--limit", "--source"].includes(arg) && !["--limit", "--source"].includes(rest[index - 1] ?? ""));
+    const query = queryParts.join(" ").trim();
+    const result = await searchStatSeriesTool({ query, source, limit });
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  if (command === "get-stat-series" || command === "get_stat_series") {
+    const source = (parseOption(rest, "--source") as "ecos" | "kosis" | undefined) ?? "ecos";
+    const tableId = parseOption(rest, "--table");
+    const itemCode = parseOption(rest, "--item");
+    const start = parseOption(rest, "--start");
+    const end = parseOption(rest, "--end");
+    const result = await getStatSeriesTool({ source, table_id: tableId ?? "", item_code: itemCode, start: start ?? "", end: end ?? "" });
     console.log(JSON.stringify(result, null, 2));
     return;
   }

@@ -1,6 +1,6 @@
 import { getLawTextTool, searchLawTool, lawTools } from "./tools/law.js";
 import { assemblyTools, getBillDetailTool, searchBillTool } from "./tools/assembly.js";
-import { statTools } from "./tools/stats.js";
+import { getStatSeriesTool, searchStatSeriesTool, statTools } from "./tools/stats.js";
 import { datasetTools } from "./tools/dataset.js";
 
 export const toolCatalog = [...lawTools, ...assemblyTools, ...statTools, ...datasetTools];
@@ -15,6 +15,10 @@ export async function runTool(name: string, input: unknown): Promise<unknown> {
       return searchBillTool(input as { bill_no?: string; bill_name?: string; proposer?: string; committee?: string; age?: string; limit?: number });
     case "get_bill_detail":
       return getBillDetailTool(input as { bill_no?: string; bill_id?: string });
+    case "search_stat_series":
+      return searchStatSeriesTool(input as { query: string; source?: "ecos" | "kosis" | "all"; limit?: number });
+    case "get_stat_series":
+      return getStatSeriesTool(input as { source: "ecos" | "kosis"; table_id: string; item_code?: string; start: string; end: string });
     default:
       throw new Error(`Unsupported tool: ${name}`);
   }

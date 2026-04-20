@@ -39,13 +39,15 @@ kgab search-law "행정기본법" --limit 3
 kgab get-law-text --law-name 행정기본법 --article 제1조
 kgab search-bill --bill-no 2207018
 kgab get-bill-detail --bill-no 2207018
+kgab search-stat-series 기준금리 --source ecos --limit 3
+kgab get-stat-series --source ecos --table 722Y001 --item 0101000 --start 202501 --end 202504
 ```
 
 ## 시작 순서
 1. 저장소 구조와 문서를 먼저 읽습니다.
 2. `docs/setup.md`와 `docs/security-and-secrets.md`를 확인합니다.
 3. provider registry와 matching 구조를 확인합니다.
-4. `kgab search-law "행정기본법" --limit 3`, `kgab get-law-text --law-name 행정기본법 --article 제1조`, `kgab search-bill --bill-no 2207018`로 working tool을 테스트합니다.
+4. `kgab search-law "행정기본법" --limit 3`, `kgab get-law-text --law-name 행정기본법 --article 제1조`, `kgab search-bill --bill-no 2207018`, `kgab search-stat-series 기준금리 --source ecos --limit 3`로 working tool을 테스트합니다.
 
 ## Design principles
 - provider-first가 아니라 **question-first tools**
@@ -86,11 +88,13 @@ src/
 현재 구현된 것:
 1. provider registry 코드화
 2. config loader 추가
-3. law/bill resolver 골격 추가
+3. law/bill/stat resolver 골격 추가
 4. 법제처 adapter 기반 `search_law` CLI/MCP 진입점 구현
 5. `law_name → MST resolve → lawService` 흐름의 `get_law_text` 구현
 6. 열린국회정보 기반 `search_bill` 구현
 7. `bill_no → BILL_ID resolve → BILLINFODETAIL + BPMBILLSUMMARY` 흐름의 `get_bill_detail` 구현
+8. ECOS 기반 `search_stat_series` 구현
+9. ECOS 기반 `get_stat_series` 구현
 
 현재 구조는 아래 3층을 기준으로 움직입니다.
 1. raw provider adapters
@@ -98,7 +102,7 @@ src/
 3. MCP + CLI tool surface
 
 다음 구현 우선순위는 다음과 같습니다.
-1. `search_stat_series`
-2. `get_stat_series`
+1. KOSIS 기반 `search_stat_series` 확장
+2. KOSIS 기반 `get_stat_series` 확장
 3. `search_public_dataset`
 4. `get_dataset_metadata`

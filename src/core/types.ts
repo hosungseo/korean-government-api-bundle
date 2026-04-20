@@ -124,6 +124,46 @@ export interface GetBillDetailResponse extends ToolResponseBase<GetBillDetailInp
   plenary_result: string | null;
 }
 
+export interface SearchStatSeriesInput {
+  query: string;
+  source?: "ecos" | "kosis" | "all";
+  limit?: number;
+}
+
+export interface SearchStatSeriesItem {
+  source: "ecos" | "kosis";
+  series_name: string;
+  table_id: string;
+  item_code: string | null;
+  unit: string | null;
+  frequency: string | null;
+  original_url: string;
+}
+
+export interface SearchStatSeriesResponse extends ToolResponseBase<SearchStatSeriesInput> {
+  items: SearchStatSeriesItem[];
+}
+
+export interface GetStatSeriesInput {
+  source: "ecos" | "kosis";
+  table_id: string;
+  item_code?: string;
+  start: string;
+  end: string;
+}
+
+export interface StatSeriesValue {
+  time: string;
+  value: string;
+}
+
+export interface GetStatSeriesResponse extends ToolResponseBase<GetStatSeriesInput> {
+  unit: string | null;
+  frequency: string | null;
+  values: StatSeriesValue[];
+  updated_at: string | null;
+}
+
 export interface BundleConfig {
   law: {
     oc: string;
@@ -135,6 +175,15 @@ export interface BundleConfig {
     apiKey: string;
     baseUrl: string;
     defaultAge: string;
+  };
+  ecos: {
+    apiKey: string;
+    baseUrl: string;
+    language: string;
+  };
+  kosis: {
+    apiKey: string;
+    baseUrl: string;
   };
 }
 

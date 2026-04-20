@@ -1,5 +1,5 @@
 import { normalizeAgeLabel, normalizeQueryText } from "./normalize.js";
-import type { IntentResolution, SearchBillInput, SearchLawInput } from "./types.js";
+import type { IntentResolution, SearchBillInput, SearchLawInput, SearchStatSeriesInput } from "./types.js";
 
 const billPattern = /^\d{7,8}$/;
 const lawKeywordPattern = /(법|시행령|시행규칙|조문|부칙|법령)/;
@@ -64,5 +64,42 @@ export function resolveSearchBillIntent(input: SearchBillInput): IntentResolutio
     providerId: "assembly_openapi",
     matchedBy: "fallback",
     confidence: 0.5
+  };
+}
+
+export function resolveSearchStatIntent(input: SearchStatSeriesInput): IntentResolution {
+  const normalized = normalizeQueryText(input.query);
+  const source = input.source ?? "all";
+
+  if (source === "kosis") {
+    return {
+      intent: "stat-search",
+      providerId: "kosis",
+      matchedBy: "keyword",
+      confidence: 0.72,
+      alternatives: [
+        {
+          provider: "ECOS",
+          tool: "search_stat_series",
+          reason: "현재 working slice는 ECOS 중심으로 먼저 구현되었습니다."
+        }
+      ]
+    };
+  }
+
+  if (/(기준금리|금리|CPI|소비자물가|통화량|M2|주택담보대출)/.test(normalized)) {
+    return {
+      intent: "stat-search",
+      providerId: "ecos",
+      matchedBy: "keyword",
+      confidence: 0.95
+    };
+  }
+
+  return {
+    intent: "stat-search",
+    providerId: source === "all" ? "ecos" : source,
+    matchedBy: "keyword",
+    confidence: 0.8
   };
 }

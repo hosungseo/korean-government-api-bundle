@@ -12,6 +12,15 @@ export function loadConfig(): BundleConfig {
       apiKey: process.env.ASSEMBLY_API_KEY ?? "",
       baseUrl: process.env.ASSEMBLY_API_BASE_URL ?? "https://open.assembly.go.kr/portal/openapi",
       defaultAge: process.env.ASSEMBLY_DEFAULT_AGE ?? "제22대"
+    },
+    ecos: {
+      apiKey: process.env.ECOS_API_KEY ?? "",
+      baseUrl: process.env.ECOS_API_BASE_URL ?? "https://ecos.bok.or.kr/api",
+      language: process.env.ECOS_LANGUAGE ?? "kr"
+    },
+    kosis: {
+      apiKey: process.env.KOSIS_API_KEY ?? "",
+      baseUrl: process.env.KOSIS_API_BASE_URL ?? "https://kosis.kr/openapi"
     }
   };
 }

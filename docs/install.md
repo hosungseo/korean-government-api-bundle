@@ -11,6 +11,7 @@
 - config loader 추가 완료
 - 법제처 adapter 기반 `search_law`, `get_law_text` 구현 및 CLI 검증 완료
 - 열린국회정보 기반 `search_bill`, `get_bill_detail` 구현 및 CLI 검증 완료
+- ECOS 기반 `search_stat_series`, `get_stat_series` 구현 및 CLI 검증 완료
 
 ## 목표 설치 흐름
 향후에는 아래 순서를 기본으로 합니다.
@@ -32,6 +33,8 @@ node dist/cli/index.js search-law "행정기본법" --limit 3
 node dist/cli/index.js get-law-text --law-name 행정기본법 --article 제1조
 ASSEMBLY_API_KEY=your_key_here node dist/cli/index.js search-bill --bill-no 2207018
 ASSEMBLY_API_KEY=your_key_here node dist/cli/index.js get-bill-detail --bill-no 2207018
+node dist/cli/index.js search-stat-series 기준금리 --source ecos --limit 3
+ECOS_API_KEY=your_key_here node dist/cli/index.js get-stat-series --source ecos --table 722Y001 --item 0101000 --start 202501 --end 202504
 ```
 
 ## MCP 실행 목표 예시
@@ -40,5 +43,5 @@ npm run mcp
 ```
 
 ## 현재 구현 범위 주의
-지금은 `search_law`, `get_law_text`, `search_bill`, `get_bill_detail`이 실제 동작합니다.
-통계/공공데이터 tool은 아직 문서와 골격 중심이므로 다음 단계 구현이 이어져야 합니다.
+지금은 `search_law`, `get_law_text`, `search_bill`, `get_bill_detail`, `search_stat_series`, `get_stat_series`가 실제 동작합니다.
+다만 통계 축은 현재 ECOS 중심 working slice이며, KOSIS와 공공데이터 tool은 다음 단계 구현이 이어져야 합니다.

@@ -10,13 +10,15 @@
 - `law_name → MST resolve → lawService` 흐름의 `get_law_text` 구현 완료
 - 열린국회정보 기반 `search_bill` 구현 완료
 - `bill_no → BILL_ID resolve → BILLINFODETAIL + BPMBILLSUMMARY` 흐름의 `get_bill_detail` 구현 완료
+- ECOS 기반 `search_stat_series` 구현 완료
+- ECOS 기반 `get_stat_series` 구현 완료
 
 ## 다음 구현 순서
-### Phase 3
-- `search_stat_series`
-- `get_stat_series`
-
 ### Phase 4
+- KOSIS 기반 `search_stat_series` 확장
+- KOSIS 기반 `get_stat_series` 확장
+
+### Phase 5
 - `search_public_dataset`
 - `get_dataset_metadata`
 
