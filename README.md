@@ -166,6 +166,7 @@ src/
 13. KOSIS demographic slice 확장 기반 `search_stat_series`, `get_stat_series` 구현
 14. `compare_stat_series` 구현
 15. 공공데이터포털 기반 `search_public_dataset`, `get_dataset_metadata` 구현
+16. dataset detail metadata를 data.go.kr detail HTML이 아니라 official catalog JSON(`/catalog/{id}/*.json`) 우선 경로로 전환
 
 현재 구조는 아래 3층을 기준으로 움직입니다.
 1. raw provider adapters

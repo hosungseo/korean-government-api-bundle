@@ -254,10 +254,12 @@
 - 공공데이터포털
 
 ### internal endpoints
-- dataset metadata / catalog 계열 API
+- search page for id discovery: `/tcs/dss/selectDataSetList.do`
+- official catalog metadata hydration: `/catalog/{datasetId}/openapi.json`, `/catalog/{datasetId}/fileData.json`
 
 ### notes
-- dataset title, provider, format, has_api 중심 반환
+- search 결과는 HTML card를 최소한으로 파싱해 dataset id를 찾고, 실제 메타데이터는 official catalog JSON으로 보강
+- 503/timeout 대비 retry 적용
 
 ---
 
@@ -270,10 +272,11 @@
 - 공공데이터포털
 
 ### internal endpoints
-- dataset detail / service detail 계열 API
+- official catalog metadata: `/catalog/{datasetId}/openapi.json`, `/catalog/{datasetId}/fileData.json`
+- machine-readable RDF view: `/dcat/metadata/{datasetId}`
 
 ### notes
-- description, provider, format, api availability, original url 반환
+- dataset detail page HTML 스크레이프 대신 official catalog JSON 우선 사용
 
 ---
 

@@ -1,4 +1,5 @@
 import { ProviderError } from "../../core/errors.js";
+import { fetchJsonWithRetry, fetchTextWithRetry } from "../../core/http.js";
 import { clampLimit, normalizeQueryText, stripXmlTags } from "../../core/normalize.js";
 import type {
   BundleConfig,
@@ -7,6 +8,46 @@ import type {
   SearchPublicDatasetItem
 } from "../../core/types.js";
 import type { DatasetSearchHit } from "./catalog.js";
+
+type DatasetKind = "openapi" | "fileData";
+
+interface DataGoKrCatalogJson {
+  name?: string;
+  description?: string;
+  url?: string;
+  keywords?: string;
+  license?: string;
+  dateCreated?: string;
+  dateModified?: string;
+  datePublished?: string;
+  spatialCoverage?: string;
+  temporalCoverage?: string;
+  additionalType?: string;
+  datasetTimeInterval?: string;
+  encodingFormat?: string;
+  creator?: {
+    name?: string;
+    contactPoint?: {
+      contactType?: string;
+      telephone?: string;
+      "@type"?: string;
+    };
+    "@type"?: string;
+  };
+  "@context"?: string;
+  "@type"?: string;
+}
+
+interface DatasetMetadataRecord {
+  datasetId: string;
+  kind: DatasetKind;
+  title: string;
+  provider: string | null;
+  description: string | null;
+  format: string | null;
+  apiAvailable: boolean;
+  originalUrl: string;
+}
 
 function absoluteUrl(path: string, config: BundleConfig): string {
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
@@ -35,7 +76,7 @@ function normalizeFormat(raw: string | null): string | null {
 }
 
 function parseSearchBlock(block: string, config: BundleConfig): DatasetSearchHit | null {
-  const linkMatch = block.match(/<a href="(\/data\/(\d+)\/(openapi|fileData)\.do)">/);
+  const linkMatch = block.match(/<a href="(\/data\/(\d+)\/(openapi|fileData)\.do)[^"]*">/);
   if (!linkMatch) return null;
 
   const titleMatch = block.match(/<span class="title">([\s\S]*?)<\/span>\s*<\/a>/);
@@ -45,7 +86,7 @@ function parseSearchBlock(block: string, config: BundleConfig): DatasetSearchHit
   const providerMatch = block.match(/제공기관[\s\S]*?<span class="data">([\s\S]*?)<\/span>/);
   const formatMatches = [...block.matchAll(/<span class="(?:tagset|labelset)[^>]*">([^<]+)<\/span>/g)].map((m) => decodeHtml(m[1]));
   const format = normalizeFormat(formatMatches.filter((item) => /CSV|JSON|XML|XLSX|XLS|TXT|HWP|PDF|ZIP|REST|SOAP/i.test(item)).join(", "));
-  const kind = linkMatch[3] as "openapi" | "fileData";
+  const kind = linkMatch[3] as DatasetKind;
 
   return {
     datasetId: linkMatch[2],
@@ -58,14 +99,111 @@ function parseSearchBlock(block: string, config: BundleConfig): DatasetSearchHit
   };
 }
 
-async function fetchHtml(url: string): Promise<string> {
-  const response = await fetch(url, {
-    headers: { "User-Agent": "Mozilla/5.0" }
-  });
-  if (!response.ok) {
-    throw new ProviderError(`data.go.kr request failed with status ${response.status}`, { url });
+function searchPageUrl(keyword: string, config: BundleConfig): string {
+  return `${config.dataGoKr.baseUrl}/tcs/dss/selectDataSetList.do?keyword=${encodeURIComponent(keyword)}&detailKeyword=&publicDataPk=&recmSe=N&detailText=`;
+}
+
+function catalogMetadataUrl(datasetId: string, kind: DatasetKind, config: BundleConfig): string {
+  return `${config.dataGoKr.baseUrl}/catalog/${datasetId}/${kind}.json`;
+}
+
+function isMissingCatalogPayload(payload: DataGoKrCatalogJson): boolean {
+  const sample = `${payload.name ?? ""} ${payload.description ?? ""}`;
+  return /해당 데이터는 존재하지 않습니다/.test(sample);
+}
+
+function normalizeCatalogPayload(datasetId: string, kind: DatasetKind, payload: DataGoKrCatalogJson, config: BundleConfig): DatasetMetadataRecord {
+  const title = payload.name?.trim();
+  if (!title || isMissingCatalogPayload(payload)) {
+    throw new ProviderError("could not resolve dataset metadata from catalog json", { datasetId, kind });
   }
-  return response.text();
+
+  const format = normalizeFormat(payload.encodingFormat ?? null);
+  const provider = payload.creator?.name?.trim() || null;
+  const description = payload.description?.trim() || null;
+  const originalUrl = payload.url?.trim() || absoluteUrl(`/data/${datasetId}/${kind}.do`, config);
+
+  return {
+    datasetId,
+    kind,
+    title,
+    provider,
+    description,
+    format,
+    apiAvailable: kind === "openapi" || /JSON|XML|REST|SOAP/i.test(format ?? ""),
+    originalUrl
+  };
+}
+
+async function fetchSearchHtml(url: string): Promise<string> {
+  return fetchTextWithRetry(url, {
+    headers: { "User-Agent": "Mozilla/5.0" },
+    timeoutMs: 8000,
+    retries: 2,
+    retryDelayMs: 500,
+    errorPrefix: "data.go.kr"
+  });
+}
+
+async function fetchCatalogMetadata(datasetId: string, config: BundleConfig, preferredKind?: DatasetKind): Promise<DatasetMetadataRecord> {
+  const fallbackKinds: DatasetKind[] = preferredKind === "openapi" ? ["fileData"] : ["openapi"];
+  const candidateKinds: DatasetKind[] = preferredKind ? [preferredKind, ...fallbackKinds] : ["openapi", "fileData"];
+  let lastError: unknown;
+
+  for (const kind of candidateKinds) {
+    const url = catalogMetadataUrl(datasetId, kind, config);
+
+    try {
+      const payload = await fetchJsonWithRetry<DataGoKrCatalogJson>(url, {
+        headers: { "User-Agent": "Mozilla/5.0", Accept: "application/json" },
+        timeoutMs: 8000,
+        retries: 2,
+        retryDelayMs: 500,
+        errorPrefix: "data.go.kr"
+      });
+
+      if (isMissingCatalogPayload(payload)) {
+        continue;
+      }
+
+      return normalizeCatalogPayload(datasetId, kind, payload, config);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  if (lastError instanceof ProviderError) {
+    throw lastError;
+  }
+
+  throw new ProviderError("could not resolve dataset metadata from official catalog endpoints", { datasetId });
+}
+
+async function hydrateSearchHit(hit: DatasetSearchHit, config: BundleConfig): Promise<SearchPublicDatasetItem> {
+  try {
+    const metadata = await fetchCatalogMetadata(hit.datasetId, config, hit.kind);
+    return {
+      dataset_title: metadata.title,
+      provider: metadata.provider,
+      dataset_id: hit.datasetId,
+      format: metadata.format,
+      has_api: metadata.apiAvailable,
+      original_url: metadata.originalUrl
+    };
+  } catch {
+    return {
+      dataset_title: hit.title,
+      provider: hit.provider,
+      dataset_id: hit.datasetId,
+      format: hit.format,
+      has_api: hit.hasApi,
+      original_url: hit.originalUrl
+    };
+  }
+}
+
+function compact(value: string): string {
+  return value.replace(/\s+/g, "").toLowerCase();
 }
 
 export async function searchPublicDatasetProvider(
@@ -74,13 +212,12 @@ export async function searchPublicDatasetProvider(
 ): Promise<{ items: SearchPublicDatasetItem[]; originalUrl: string }> {
   const limit = clampLimit(input.limit, 10, 1, 20);
   const keyword = normalizeQueryText(input.query);
-  const originalUrl = `${config.dataGoKr.baseUrl}/tcs/dss/selectDataSetList.do?keyword=${encodeURIComponent(keyword)}&detailKeyword=&publicDataPk=&recmSe=N&detailText=`;
-  const html = await fetchHtml(originalUrl);
+  const originalUrl = searchPageUrl(keyword, config);
+  const html = await fetchSearchHtml(originalUrl);
 
   const keywordParts = keyword.split(" ").filter(Boolean);
-  const compact = (value: string) => value.replace(/\s+/g, "").toLowerCase();
   const compactKeyword = compact(keyword);
-  const items = extractListBlocks(html)
+  const rawHits = extractListBlocks(html)
     .map((block) => parseSearchBlock(block, config))
     .filter((item): item is DatasetSearchHit => Boolean(item))
     .filter((item) => {
@@ -88,30 +225,15 @@ export async function searchPublicDatasetProvider(
       const provider = compact(item.provider ?? "");
       return title.includes(compactKeyword) || keywordParts.every((word) => title.includes(compact(word)) || provider.includes(compact(word)));
     })
-    .slice(0, limit)
-    .map((item) => ({
-      dataset_title: item.title,
-      provider: item.provider,
-      dataset_id: item.datasetId,
-      format: item.format,
-      has_api: item.hasApi,
-      original_url: item.originalUrl
-    }));
+    .slice(0, Math.max(limit * 2, limit));
 
-  return { items, originalUrl };
-}
+  const hydrated = await Promise.all(rawHits.map((hit) => hydrateSearchHit(hit, config)));
+  const deduped = hydrated.filter((item, index, items) => items.findIndex((candidate) => candidate.dataset_id === item.dataset_id) === index);
 
-function extractMetaCell(html: string, label: string): string | null {
-  const pattern = new RegExp(`<th[^>]*>${label}<\\/th>[\\s\\S]*?<td[^>]*>([\\s\\S]*?)<\\/td>`);
-  const match = html.match(pattern);
-  return match ? decodeHtml(match[1]) : null;
-}
-
-function extractDescription(html: string): string | null {
-  const metaDesc = html.match(/<meta name="description"[^>]*content="([^"]+)"/i);
-  if (metaDesc) return decodeHtml(metaDesc[1]);
-  const p = html.match(/<div class="cont-box[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/);
-  return p ? decodeHtml(p[1]) : null;
+  return {
+    items: deduped.slice(0, limit),
+    originalUrl
+  };
 }
 
 export async function getDatasetMetadataProvider(
@@ -123,47 +245,15 @@ export async function getDatasetMetadataProvider(
     throw new ProviderError("get_dataset_metadata requires dataset_id or service_id");
   }
 
-  const candidatePaths = [
-    `/data/${datasetId}/openapi.do`,
-    `/data/${datasetId}/fileData.do`
-  ];
-
-  let html: string | null = null;
-  let originalUrl: string | null = null;
-  for (const path of candidatePaths) {
-    const url = absoluteUrl(path, config);
-    try {
-      const fetched = await fetchHtml(url);
-      if (fetched.includes("dataset-table") || fetched.includes("공공데이터포털")) {
-        html = fetched;
-        originalUrl = url;
-        break;
-      }
-    } catch {
-      // try next path
-    }
-  }
-
-  if (!html || !originalUrl) {
-    throw new ProviderError("could not resolve dataset detail page", { datasetId });
-  }
-
-  const titleMatch = html.match(/<caption>([\s\S]*?)로 오픈 API 정보 표|<title>([\s\S]*?)<\/title>/);
-  const rawTitle = titleMatch ? decodeHtml(titleMatch[1] || titleMatch[2]) : `dataset ${datasetId}`;
-  const title = rawTitle.replace(/로 오픈 API 정보 표.*/, "").replace(/\s+\|\s*공공데이터포털.*/, "").trim();
-  const provider = extractMetaCell(html, "제공기관");
-  const format = extractMetaCell(html, "데이터포맷");
-  const description = extractDescription(html);
-  const traffic = extractMetaCell(html, "활용신청") ?? extractMetaCell(html, "다운로드");
-  const apiType = extractMetaCell(html, "API 유형");
+  const metadata = await fetchCatalogMetadata(datasetId, config);
 
   return {
-    title,
-    provider,
-    description,
-    format,
-    apiAvailable: Boolean(apiType || originalUrl.endsWith("openapi.do")),
-    downloadCount: traffic,
-    originalUrl
+    title: metadata.title,
+    provider: metadata.provider,
+    description: metadata.description,
+    format: metadata.format,
+    apiAvailable: metadata.apiAvailable,
+    downloadCount: null,
+    originalUrl: metadata.originalUrl
   };
 }
