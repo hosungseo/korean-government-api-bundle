@@ -72,6 +72,10 @@ export async function searchLawProvider(input: SearchLawInput, config: BundleCon
   const query = normalizeQueryText(input.query);
   const limit = clampLimit(input.limit, 10, 1, 20);
 
+  if (!config.law.oc.trim()) {
+    throw new ProviderError("LAW_OC is required for law.go.kr tools");
+  }
+
   if (!query) {
     throw new ProviderError("search_law requires a non-empty query");
   }
