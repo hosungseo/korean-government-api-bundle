@@ -18,6 +18,7 @@
 - 국민참여입법센터 category coverage를 `notice-mod`, `admin-notice`, `interpretation`, `example`까지 확장 완료
 - 행정안전부 관보 API 기반 `search_gazette_items` 구현 완료
 - ECOS 기반 `search_stat_series` 구현 완료
+- ECOS `StatisticTableList` + `StatisticItemList` 기반 live search fallback 추가 완료
 - ECOS 기반 `get_stat_series` 구현 완료
 - KOSIS demographic slice 확장 기반 `search_stat_series` 구현 완료
 - KOSIS demographic slice 확장 기반 `get_stat_series` 구현 완료

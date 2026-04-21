@@ -20,6 +20,22 @@ interface EcosRow {
   DATA_VALUE: string;
 }
 
+interface EcosTableRow {
+  STAT_CODE: string;
+  STAT_NAME: string;
+  CYCLE: string | null;
+  SRCH_YN: string | null;
+}
+
+interface EcosItemRow {
+  STAT_CODE: string;
+  STAT_NAME: string;
+  ITEM_CODE: string | null;
+  ITEM_NAME: string | null;
+  CYCLE: string | null;
+  UNIT_NAME: string | null;
+}
+
 function ensureEcosKey(config: BundleConfig): string {
   if (!config.ecos.apiKey) {
     throw new ProviderError("ECOS_API_KEY is required for ECOS tools");
@@ -36,13 +52,98 @@ function buildEcosSeriesUrl(config: BundleConfig, apiKey: string, tableId: strin
   return `${config.ecos.baseUrl}/StatisticSearch/${apiKey}/json/${config.ecos.language}/1/100/${tableId}/M/${start}/${end}/${safeItem}`;
 }
 
+function buildEcosTableListUrl(config: BundleConfig, apiKey: string): string {
+  return `${config.ecos.baseUrl}/StatisticTableList/${apiKey}/json/${config.ecos.language}/1/1000/`;
+}
+
+function buildEcosItemListUrl(config: BundleConfig, apiKey: string, tableId: string): string {
+  return `${config.ecos.baseUrl}/StatisticItemList/${apiKey}/json/${config.ecos.language}/1/200/${tableId}`;
+}
+
 function normalizePeriod(value: string): string {
   return value.replace(/\D/g, "");
 }
 
+function scoreTextMatch(haystack: string, normalizedQuery: string): number {
+  const compactHaystack = haystack.toLowerCase();
+  const tokens = normalizedQuery.split(/\s+/).filter(Boolean);
+  const exact = compactHaystack.includes(normalizedQuery) ? 4 : 0;
+  const tokenMatches = tokens.filter((token) => compactHaystack.includes(token)).length;
+  return exact + tokenMatches;
+}
+
+async function fetchEcosJson<T>(requestUrl: string, originalUrl: string): Promise<T> {
+  return fetchJsonWithRetry<T>(requestUrl, {
+    headers: {
+      "User-Agent": "korean-government-api-bundle/0.1.0"
+    },
+    timeoutMs: 8000,
+    retries: 2,
+    retryDelayMs: 400,
+    errorPrefix: "ECOS"
+  }).catch((error) => {
+    if (error instanceof ProviderError) {
+      throw new ProviderError(error.message, { originalUrl });
+    }
+    throw error;
+  });
+}
+
+async function searchEcosSeriesLive(
+  input: SearchStatSeriesInput,
+  config: BundleConfig,
+  remainingLimit: number
+): Promise<SearchStatSeriesItem[]> {
+  if (remainingLimit <= 0 || !config.ecos.apiKey?.trim()) {
+    return [];
+  }
+
+  const normalized = normalizeQueryText(input.query).toLowerCase();
+  const apiKey = ensureEcosKey(config);
+  const tableListUrl = buildEcosTableListUrl(config, apiKey);
+  const tableListOriginalUrl = sanitizeEcosUrl(tableListUrl, apiKey);
+  const tablePayload = await fetchEcosJson<{ StatisticTableList?: { row?: EcosTableRow[] } }>(tableListUrl, tableListOriginalUrl);
+  const tables = (tablePayload.StatisticTableList?.row ?? [])
+    .filter((row) => row.SRCH_YN === "Y")
+    .map((row) => ({ row, score: scoreTextMatch(row.STAT_NAME ?? "", normalized) }))
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 8);
+
+  const itemSets = await Promise.all(
+    tables.map(async ({ row, score }) => {
+      const itemListUrl = buildEcosItemListUrl(config, apiKey, row.STAT_CODE);
+      const itemListOriginalUrl = sanitizeEcosUrl(itemListUrl, apiKey);
+      const itemPayload = await fetchEcosJson<{ StatisticItemList?: { row?: EcosItemRow[] } }>(itemListUrl, itemListOriginalUrl);
+      return (itemPayload.StatisticItemList?.row ?? [])
+        .filter((item) => item.CYCLE === "M")
+        .map((item) => ({
+          item,
+          score: score + scoreTextMatch(`${item.ITEM_NAME ?? ""} ${item.STAT_NAME ?? ""}`, normalized)
+        }))
+        .filter((entry) => entry.score > 0);
+    })
+  );
+
+  return itemSets
+    .flat()
+    .sort((a, b) => b.score - a.score)
+    .map(({ item }) => ({
+      source: "ecos" as const,
+      series_name: item.ITEM_NAME ?? item.STAT_NAME,
+      table_id: item.STAT_CODE,
+      item_code: item.ITEM_CODE,
+      unit: item.UNIT_NAME,
+      frequency: item.CYCLE,
+      original_url: "https://ecos.bok.or.kr/"
+    }))
+    .filter((item, index, items) => items.findIndex((candidate) => candidate.table_id === item.table_id && candidate.item_code === item.item_code) === index)
+    .slice(0, remainingLimit);
+}
+
 export async function searchStatSeriesProvider(
   input: SearchStatSeriesInput,
-  _config: BundleConfig
+  config: BundleConfig
 ): Promise<{ items: SearchStatSeriesItem[]; originalUrl: string }> {
   const normalized = normalizeQueryText(input.query).toLowerCase();
   const limit = clampLimit(input.limit, 10, 1, 20);
@@ -52,7 +153,7 @@ export async function searchStatSeriesProvider(
     return { items: [], originalUrl: "https://kosis.kr/openapi/" };
   }
 
-  const scored = ecosSeriesCatalog
+  const curated = ecosSeriesCatalog
     .map((item) => {
       const haystack = [item.series_name, ...item.topic_keywords].join(" ").toLowerCase();
       const score = haystack.includes(normalized) ? 2 : item.topic_keywords.some((keyword) => normalized.includes(keyword.toLowerCase())) ? 1 : 0;
@@ -70,6 +171,11 @@ export async function searchStatSeriesProvider(
       frequency: entry.item.frequency,
       original_url: entry.item.original_url
     }));
+
+  const live = await searchEcosSeriesLive(input, config, Math.max(0, limit - curated.length));
+  const scored = [...curated, ...live]
+    .filter((item, index, items) => items.findIndex((candidate) => candidate.table_id === item.table_id && candidate.item_code === item.item_code) === index)
+    .slice(0, limit);
 
   return {
     items: scored,
@@ -91,20 +197,7 @@ export async function getStatSeriesProvider(
   const requestUrl = buildEcosSeriesUrl(config, apiKey, input.table_id, start, end, input.item_code);
   const originalUrl = sanitizeEcosUrl(requestUrl, apiKey);
 
-  const payload = await fetchJsonWithRetry<{ StatisticSearch?: { row?: EcosRow[] } }>(requestUrl, {
-    headers: {
-      "User-Agent": "korean-government-api-bundle/0.1.0"
-    },
-    timeoutMs: 8000,
-    retries: 2,
-    retryDelayMs: 400,
-    errorPrefix: "ECOS"
-  }).catch((error) => {
-    if (error instanceof ProviderError) {
-      throw new ProviderError(error.message, { originalUrl });
-    }
-    throw error;
-  });
+  const payload = await fetchEcosJson<{ StatisticSearch?: { row?: EcosRow[] } }>(requestUrl, originalUrl);
 
   const rows = payload.StatisticSearch?.row ?? [];
   if (rows.length === 0) {
