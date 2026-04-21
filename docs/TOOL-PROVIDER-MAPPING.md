@@ -23,6 +23,8 @@
 4. recommended tool 결정
 5. tool별 suggested input auto-fill
 6. missing required field와 CLI template 반환
+7. 애매한 질문이면 disambiguation option과 follow-up question 생성
+8. 실행 가능한 상태면 handoff 상태를 `ready`, 부족한 입력이 있으면 `needs_input`, 해석 분기가 남아 있으면 `needs_disambiguation`으로 표기
 
 ### notes
 - 실제 외부 API 호출 전의 pre-routing surface

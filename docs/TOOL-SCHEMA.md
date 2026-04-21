@@ -21,6 +21,10 @@
 - `suggested_input`
 - `missing_required_fields[]`
 - `suggested_cli`
+- `handoff_status`
+- `handoff_message`
+- `follow_up_question`
+- `disambiguation_options[]`
 - `alternatives[]`
 
 ---

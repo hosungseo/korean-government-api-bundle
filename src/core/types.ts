@@ -238,6 +238,16 @@ export interface BundleResolvedEntity {
 
 export type BundleSuggestedInputValue = string | number | boolean | null;
 
+export type BundleHandoffStatus = "ready" | "needs_input" | "needs_disambiguation";
+
+export interface BundleDisambiguationOption {
+  label: string;
+  value: string;
+  tool: string;
+  provider: string;
+  reason: string;
+}
+
 export interface ResolveSourceBundleResponse extends ToolResponseBase<ResolveSourceBundleInput> {
   intent: BundleIntent;
   recommended_provider_id: string;
@@ -248,6 +258,10 @@ export interface ResolveSourceBundleResponse extends ToolResponseBase<ResolveSou
   suggested_input: Record<string, BundleSuggestedInputValue>;
   missing_required_fields: string[];
   suggested_cli: string | null;
+  handoff_status: BundleHandoffStatus;
+  handoff_message: string;
+  follow_up_question: string | null;
+  disambiguation_options: BundleDisambiguationOption[];
 }
 
 export interface SearchStatSeriesInput {

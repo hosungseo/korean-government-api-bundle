@@ -189,6 +189,10 @@ provider 고유 어휘를 보면 추가 가중치
   - 가능한 경우 `suggested_input`에 tool 입력 shape를 함께 채운다
   - 아직 부족한 필수값은 `missing_required_fields`에 남긴다
   - CLI 호출용 `suggested_cli` template도 함께 반환한다
+- handoff:
+  - 질문이 애매하면 `needs_disambiguation`과 `disambiguation_options`를 반환한다
+  - 추천 tool은 맞지만 입력이 부족하면 `needs_input`과 `follow_up_question`을 반환한다
+  - 바로 실행 가능하면 `ready`로 표기한다
 
 ### `search_stat_series`
 - primary providers: ECOS, KOSIS

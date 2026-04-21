@@ -86,6 +86,7 @@ kgab get-dataset-metadata --dataset-id 15108065
 - 자연어 요약 + structured payload 동시 제공
 - 원문 URL, identifier, fetched_at 포함
 - `resolve_source_bundle`는 recommendation뿐 아니라 **suggested_input / missing_required_fields / suggested_cli**까지 반환
+- 애매한 질의는 **handoff_status / follow_up_question / disambiguation_options**로 다음 질문까지 제안
 - compare / verify 계열 도구로 확장 가능, 현재 `compare_stat_series` 1차 구현 포함
 
 ## Docs
@@ -140,7 +141,7 @@ src/
 3. MCP + CLI tool surface
 
 현재 남은 우선순위는 다음과 같습니다.
-1. `resolve_source_bundle`에 disambiguation question / multi-step handoff까지 붙이기
+1. `resolve_source_bundle`에 option 선택 후 실제 tool 호출까지 넘기는 handoff executor 붙이기
 2. KOSIS coverage를 curated catalog에서 자동 catalog/metadata 기반으로 더 넓히기
 3. 공공데이터포털 상세 메타데이터 필드를 더 구조화
 4. 국민참여입법센터 detail parser를 section-aware summary/attachment 중심으로 더 정교화

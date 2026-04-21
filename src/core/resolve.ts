@@ -1,5 +1,6 @@
 import { normalizeAgeLabel, normalizeArticleRef, normalizeQueryText } from "./normalize.js";
 import type {
+  BundleDisambiguationOption,
   BundleSuggestedInputValue,
   IntentResolution,
   ResolveSourceBundleInput,
@@ -11,6 +12,7 @@ import type {
 
 const billPattern = /^\d{7,8}$/;
 const lawKeywordPattern = /(법|시행령|시행규칙|조문|부칙|법령)/;
+const billKeywordPattern = /(법안|의안|위원회|발의|제안)/;
 const lawmakingKeywordPattern = /(입법현황|입법예고|행정예고|법령해석례|의견제시사례|입법계획|법제처심사|추진현황)/;
 const gazetteKeywordPattern = /(관보|정호|호외|고시|공고|훈령|예규)/;
 const datasetKeywordPattern = /(데이터셋|공공데이터포털|오픈api|openapi|api 목록|dataset)/i;
@@ -28,6 +30,10 @@ type BundleResolutionResult = {
   suggestedInput: Record<string, BundleSuggestedInputValue>;
   missingRequiredFields: string[];
   suggestedCli: string | null;
+  handoffStatus: "ready" | "needs_input" | "needs_disambiguation";
+  handoffMessage: string;
+  followUpQuestion: string | null;
+  disambiguationOptions: BundleDisambiguationOption[];
 };
 
 function resolveCompareProviderId(statIdentifiers: string[]): "ecos" | "kosis" {
@@ -263,6 +269,140 @@ function buildSuggestion(
   };
 }
 
+function buildDisambiguationOptions(normalized: string): BundleDisambiguationOption[] {
+  const options: BundleDisambiguationOption[] = [];
+
+  if (/민간위탁/.test(normalized)) {
+    options.push(
+      {
+        label: "현행 법령 기준으로 보고 싶다",
+        value: "law",
+        tool: "search_law",
+        provider: "법제처 국가법령정보",
+        reason: "민간위탁의 법적 근거와 조문을 찾는 흐름입니다."
+      },
+      {
+        label: "국회 법안 기준으로 보고 싶다",
+        value: "bill",
+        tool: "search_bill",
+        provider: "열린국회정보",
+        reason: "발의안, 심사 상태, 계류 여부를 보려는 흐름입니다."
+      },
+      {
+        label: "데이터셋부터 찾고 싶다",
+        value: "dataset",
+        tool: "search_public_dataset",
+        provider: "공공데이터포털",
+        reason: "공개 데이터 source를 먼저 찾는 흐름입니다."
+      }
+    );
+  }
+
+  if (/입법예고|행정예고/.test(normalized)) {
+    options.push(
+      {
+        label: "예고 제도 정보 중심으로 본다",
+        value: "lawmaking",
+        tool: "search_lawmaking_items",
+        provider: "국민참여입법센터 정보공개활용",
+        reason: "예고 목록과 행정 절차 정보를 구조적으로 찾습니다."
+      },
+      {
+        label: "관보 게재본 중심으로 본다",
+        value: "gazette",
+        tool: "search_gazette_items",
+        provider: "행정안전부 관보 API",
+        reason: "실제 게재된 관보 공고·고시 문서를 찾습니다."
+      }
+    );
+  }
+
+  if (lawKeywordPattern.test(normalized) && billKeywordPattern.test(normalized)) {
+    options.push(
+      {
+        label: "현행 법령을 찾는다",
+        value: "law",
+        tool: "search_law",
+        provider: "법제처 국가법령정보",
+        reason: "현행 조문과 시행 상태를 보려는 질의에 맞습니다."
+      },
+      {
+        label: "법안을 찾는다",
+        value: "bill",
+        tool: "search_bill",
+        provider: "열린국회정보",
+        reason: "발의안, 위원회 심사, 처리 상태를 보려는 질의에 맞습니다."
+      }
+    );
+  }
+
+  if (statKeywordPattern.test(normalized) && datasetKeywordPattern.test(normalized)) {
+    options.push(
+      {
+        label: "바로 통계 시계열을 찾는다",
+        value: "stats",
+        tool: "search_stat_series",
+        provider: "ECOS / KOSIS",
+        reason: "값과 시계열 후보를 바로 찾습니다."
+      },
+      {
+        label: "원천 데이터셋부터 찾는다",
+        value: "dataset",
+        tool: "search_public_dataset",
+        provider: "공공데이터포털",
+        reason: "제공 API나 배포 데이터 source를 먼저 확인합니다."
+      }
+    );
+  }
+
+  return options.filter(
+    (option, index, array) => array.findIndex((candidate) => candidate.tool === option.tool && candidate.value === option.value) === index
+  );
+}
+
+function buildHandoff(
+  normalized: string,
+  recommendedTool: string,
+  suggestedCli: string | null,
+  missingRequiredFields: string[],
+  resolution: IntentResolution
+): {
+  handoffStatus: "ready" | "needs_input" | "needs_disambiguation";
+  handoffMessage: string;
+  followUpQuestion: string | null;
+  disambiguationOptions: BundleDisambiguationOption[];
+} {
+  const disambiguationOptions = buildDisambiguationOptions(normalized);
+  const confidence = resolution.confidence ?? 0;
+
+  if (disambiguationOptions.length >= 2 && (confidence < 0.8 || /민간위탁|입법예고|행정예고/.test(normalized))) {
+    return {
+      handoffStatus: "needs_disambiguation",
+      handoffMessage: "바로 실행하기 전에 해석 축을 한 번 더 좁히는 편이 안전합니다.",
+      followUpQuestion: "어느 쪽을 원하시나요? 아래 옵션 중 하나를 고르면 그 tool 입력으로 바로 이어갈 수 있습니다.",
+      disambiguationOptions
+    };
+  }
+
+  if (missingRequiredFields.length > 0) {
+    return {
+      handoffStatus: "needs_input",
+      handoffMessage: `추천 tool은 정해졌지만 아직 ${missingRequiredFields.join(", ")} 값이 필요합니다.`,
+      followUpQuestion: `부족한 값(${missingRequiredFields.join(", ")})만 주시면 ${recommendedTool}로 바로 넘길 수 있습니다.${suggestedCli ? ` 현재 템플릿: ${suggestedCli}` : ""}`,
+      disambiguationOptions: []
+    };
+  }
+
+  return {
+    handoffStatus: "ready",
+    handoffMessage: suggestedCli
+      ? `입력 shape가 충분히 채워져 있어 ${recommendedTool}로 바로 넘길 수 있습니다.`
+      : `추천 tool ${recommendedTool}로 바로 진행할 수 있습니다.`,
+    followUpQuestion: null,
+    disambiguationOptions: []
+  };
+}
+
 export function resolveSearchLawIntent(input: SearchLawInput): IntentResolution {
   const normalized = normalizeQueryText(input.query);
 
@@ -363,6 +503,27 @@ export function resolveSearchStatIntent(input: SearchStatSeriesInput): IntentRes
   };
 }
 
+function finalizeBundleResolution(
+  input: ResolveSourceBundleInput,
+  normalized: string,
+  resolution: IntentResolution,
+  recommendedTool: string,
+  reasoning: string,
+  entities: Array<{ label: string; value: string }>
+): BundleResolutionResult {
+  const suggestion = buildSuggestion(recommendedTool, input, normalized, resolution, entities);
+  const handoff = buildHandoff(normalized, recommendedTool, suggestion.suggestedCli, suggestion.missingRequiredFields, resolution);
+
+  return {
+    resolution,
+    recommendedTool,
+    reasoning,
+    entities,
+    ...suggestion,
+    ...handoff
+  };
+}
+
 export function resolveSourceBundle(input: ResolveSourceBundleInput): BundleResolutionResult {
   const normalized = normalizeQueryText(input.query);
   const statIdentifiers = normalized.match(statIdentifierPattern) ?? [];
@@ -397,9 +558,7 @@ export function resolveSourceBundle(input: ResolveSourceBundleInput): BundleReso
         }
       ]
     };
-    const recommendedTool = "compare_stat_series";
-    const reasoning = "통계 identifier 또는 비교 표현이 보여 compare_stat_series로 바로 라우팅하는 것이 가장 적절합니다.";
-    return { resolution, recommendedTool, reasoning, entities, ...buildSuggestion(recommendedTool, input, normalized, resolution, entities) };
+    return finalizeBundleResolution(input, normalized, resolution, "compare_stat_series", "통계 identifier 또는 비교 표현이 보여 compare_stat_series로 바로 라우팅하는 것이 가장 적절합니다.", entities);
   }
 
   if (numericBill) {
@@ -416,9 +575,7 @@ export function resolveSourceBundle(input: ResolveSourceBundleInput): BundleReso
         }
       ]
     };
-    const recommendedTool = "search_bill";
-    const reasoning = "7~8자리 숫자 패턴이 의안번호와 강하게 일치합니다.";
-    return { resolution, recommendedTool, reasoning, entities, ...buildSuggestion(recommendedTool, input, normalized, resolution, entities) };
+    return finalizeBundleResolution(input, normalized, resolution, "search_bill", "7~8자리 숫자 패턴이 의안번호와 강하게 일치합니다.", entities);
   }
 
   if (mst) {
@@ -428,9 +585,7 @@ export function resolveSourceBundle(input: ResolveSourceBundleInput): BundleReso
       matchedBy: "identifier",
       confidence: 0.99
     };
-    const recommendedTool = "get_law_text";
-    const reasoning = "MST 식별자가 명시되어 있어 법령 본문 조회로 바로 연결하는 것이 가장 정확합니다.";
-    return { resolution, recommendedTool, reasoning, entities, ...buildSuggestion(recommendedTool, input, normalized, resolution, entities) };
+    return finalizeBundleResolution(input, normalized, resolution, "get_law_text", "MST 식별자가 명시되어 있어 법령 본문 조회로 바로 연결하는 것이 가장 정확합니다.", entities);
   }
 
   if (lawmakingKeywordPattern.test(normalized)) {
@@ -450,9 +605,7 @@ export function resolveSourceBundle(input: ResolveSourceBundleInput): BundleReso
       confidence: 0.93,
       alternatives
     };
-    const recommendedTool = "search_lawmaking_items";
-    const reasoning = "입법현황/입법예고/행정예고/해석례 계열 어휘가 국민참여입법센터 surface와 가장 잘 맞습니다.";
-    return { resolution, recommendedTool, reasoning, entities, ...buildSuggestion(recommendedTool, input, normalized, resolution, entities) };
+    return finalizeBundleResolution(input, normalized, resolution, "search_lawmaking_items", "입법현황/입법예고/행정예고/해석례 계열 어휘가 국민참여입법센터 surface와 가장 잘 맞습니다.", entities);
   }
 
   if (gazetteKeywordPattern.test(normalized)) {
@@ -469,9 +622,7 @@ export function resolveSourceBundle(input: ResolveSourceBundleInput): BundleReso
         }
       ]
     };
-    const recommendedTool = "search_gazette_items";
-    const reasoning = "관보/정호/호외/고시/공고 계열 표현이 관보 metadata search와 직접 연결됩니다.";
-    return { resolution, recommendedTool, reasoning, entities, ...buildSuggestion(recommendedTool, input, normalized, resolution, entities) };
+    return finalizeBundleResolution(input, normalized, resolution, "search_gazette_items", "관보/정호/호외/고시/공고 계열 표현이 관보 metadata search와 직접 연결됩니다.", entities);
   }
 
   if (datasetKeywordPattern.test(normalized)) {
@@ -488,18 +639,15 @@ export function resolveSourceBundle(input: ResolveSourceBundleInput): BundleReso
         }
       ]
     };
-    const recommendedTool = "search_public_dataset";
-    const reasoning = "데이터셋/API 카탈로그를 찾는 표현이 보여 공공데이터포털 metadata search가 가장 적절합니다.";
-    return { resolution, recommendedTool, reasoning, entities, ...buildSuggestion(recommendedTool, input, normalized, resolution, entities) };
+    return finalizeBundleResolution(input, normalized, resolution, "search_public_dataset", "데이터셋/API 카탈로그를 찾는 표현이 보여 공공데이터포털 metadata search가 가장 적절합니다.", entities);
   }
 
   if (statKeywordPattern.test(normalized)) {
     const resolution = resolveSearchStatIntent({ query: normalized, source: "all" });
-    const recommendedTool = "search_stat_series";
     const reasoning = resolution.providerId === "ecos"
       ? "금융·거시계열 어휘가 강해서 ECOS 우선 탐색이 적절합니다."
       : "국가통계/인구 계열 표현이 보여 통계 series 검색으로 라우팅합니다.";
-    return { resolution, recommendedTool, reasoning, entities, ...buildSuggestion(recommendedTool, input, normalized, resolution, entities) };
+    return finalizeBundleResolution(input, normalized, resolution, "search_stat_series", reasoning, entities);
   }
 
   if (lawKeywordPattern.test(normalized)) {
@@ -520,7 +668,7 @@ export function resolveSourceBundle(input: ResolveSourceBundleInput): BundleReso
     const reasoning = recommendedTool === "get_law_text"
       ? "조문 표현이 있어 법령 본문 조회로 바로 가는 것이 적절합니다."
       : "법령/시행령/조문 계열 표현이 법제처 search surface와 가장 잘 맞습니다.";
-    return { resolution, recommendedTool, reasoning, entities, ...buildSuggestion(recommendedTool, input, normalized, resolution, entities) };
+    return finalizeBundleResolution(input, normalized, resolution, recommendedTool, reasoning, entities);
   }
 
   const resolution: IntentResolution = {
@@ -541,7 +689,5 @@ export function resolveSourceBundle(input: ResolveSourceBundleInput): BundleReso
       }
     ]
   };
-  const recommendedTool = "search_law";
-  const reasoning = "명시적 식별자가 부족해 기본 법령 검색 surface를 fallback으로 제안합니다.";
-  return { resolution, recommendedTool, reasoning, entities, ...buildSuggestion(recommendedTool, input, normalized, resolution, entities) };
+  return finalizeBundleResolution(input, normalized, resolution, "search_law", "명시적 식별자가 부족해 기본 법령 검색 surface를 fallback으로 제안합니다.", entities);
 }
