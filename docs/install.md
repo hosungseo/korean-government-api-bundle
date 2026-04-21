@@ -36,18 +36,18 @@ node dist/cli/index.js search-law "행정기본법" --limit 3
 node dist/cli/index.js get-law-text --law-name 행정기본법 --article 제1조
 ASSEMBLY_API_KEY=your_key_here node dist/cli/index.js search-bill --bill-no 2207018
 ASSEMBLY_API_KEY=your_key_here node dist/cli/index.js get-bill-detail --bill-no 2207018
-LAWMAKING_OC=hosung91 node dist/cli/index.js search-lawmaking-items --category gov-status --agency-code 1741000 --status-code EA02 --limit 5
-LAWMAKING_OC=hosung91 node dist/cli/index.js get-lawmaking-item-detail --category gov-status --item-id 2000000324302
-LAWMAKING_OC=hosung91 node dist/cli/index.js search-lawmaking-items --category plan --year 2026 --agency-code 1741000 --limit 5
-LAWMAKING_OC=hosung91 node dist/cli/index.js search-lawmaking-items --category notice --agency-code 1741000 --limit 5
-LAWMAKING_OC=hosung91 node dist/cli/index.js get-lawmaking-item-detail --category notice --item-id 86344 --mapping-id 2000000319636 --announce-type TYPE5
-LAWMAKING_OC=hosung91 node dist/cli/index.js search-lawmaking-items --category notice-mod --agency-code 1741000 --limit 5
-LAWMAKING_OC=hosung91 node dist/cli/index.js search-lawmaking-items --category admin-notice --agency-name 행정안전부 --limit 5
-LAWMAKING_OC=hosung91 node dist/cli/index.js get-lawmaking-item-detail --category admin-notice --item-id 46444 --mapping-id 2000000325462 --announce-type TYPE6
-LAWMAKING_OC=hosung91 node dist/cli/index.js search-lawmaking-items --category interpretation --agency-code 1741000 --limit 5
-LAWMAKING_OC=hosung91 node dist/cli/index.js get-lawmaking-item-detail --category interpretation --item-id 444468
-LAWMAKING_OC=hosung91 node dist/cli/index.js search-lawmaking-items --category example --query 지방자치 --limit 5
-LAWMAKING_OC=hosung91 node dist/cli/index.js get-lawmaking-item-detail --category example --item-id 2026000014
+LAWMAKING_OC=your_oc_here node dist/cli/index.js search-lawmaking-items --category gov-status --agency-code 1741000 --status-code EA02 --limit 5
+LAWMAKING_OC=your_oc_here node dist/cli/index.js get-lawmaking-item-detail --category gov-status --item-id 2000000324302
+LAWMAKING_OC=your_oc_here node dist/cli/index.js search-lawmaking-items --category plan --year 2026 --agency-code 1741000 --limit 5
+LAWMAKING_OC=your_oc_here node dist/cli/index.js search-lawmaking-items --category notice --agency-code 1741000 --limit 5
+LAWMAKING_OC=your_oc_here node dist/cli/index.js get-lawmaking-item-detail --category notice --item-id 86344 --mapping-id 2000000319636 --announce-type TYPE5
+LAWMAKING_OC=your_oc_here node dist/cli/index.js search-lawmaking-items --category notice-mod --agency-code 1741000 --limit 5
+LAWMAKING_OC=your_oc_here node dist/cli/index.js search-lawmaking-items --category admin-notice --agency-name 행정안전부 --limit 5
+LAWMAKING_OC=your_oc_here node dist/cli/index.js get-lawmaking-item-detail --category admin-notice --item-id 46444 --mapping-id 2000000325462 --announce-type TYPE6
+LAWMAKING_OC=your_oc_here node dist/cli/index.js search-lawmaking-items --category interpretation --agency-code 1741000 --limit 5
+LAWMAKING_OC=your_oc_here node dist/cli/index.js get-lawmaking-item-detail --category interpretation --item-id 444468
+LAWMAKING_OC=your_oc_here node dist/cli/index.js search-lawmaking-items --category example --query 지방자치 --limit 5
+LAWMAKING_OC=your_oc_here node dist/cli/index.js get-lawmaking-item-detail --category example --item-id 2026000014
 node dist/cli/index.js search-stat-series 기준금리 --source ecos --limit 3
 ECOS_API_KEY=your_key_here node dist/cli/index.js get-stat-series --source ecos --table 722Y001 --item 0101000 --start 202501 --end 202504
 node dist/cli/index.js search-stat-series 총인구 --source kosis --limit 3

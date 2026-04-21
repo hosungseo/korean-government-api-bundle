@@ -50,18 +50,18 @@ kgab search-law "행정기본법" --limit 3
 kgab get-law-text --law-name 행정기본법 --article 제1조
 kgab search-bill --bill-no 2207018
 kgab get-bill-detail --bill-no 2207018
-LAWMAKING_OC=hosung91 kgab search-lawmaking-items --category gov-status --agency-code 1741000 --status-code EA02 --limit 5
-LAWMAKING_OC=hosung91 kgab get-lawmaking-item-detail --category gov-status --item-id 2000000324302
-LAWMAKING_OC=hosung91 kgab search-lawmaking-items --category plan --year 2026 --agency-code 1741000 --limit 5
-LAWMAKING_OC=hosung91 kgab search-lawmaking-items --category notice --agency-code 1741000 --limit 5
-LAWMAKING_OC=hosung91 kgab get-lawmaking-item-detail --category notice --item-id 86344 --mapping-id 2000000319636 --announce-type TYPE5
-LAWMAKING_OC=hosung91 kgab search-lawmaking-items --category notice-mod --agency-code 1741000 --limit 5
-LAWMAKING_OC=hosung91 kgab search-lawmaking-items --category admin-notice --agency-name 행정안전부 --limit 5
-LAWMAKING_OC=hosung91 kgab get-lawmaking-item-detail --category admin-notice --item-id 46444 --mapping-id 2000000325462 --announce-type TYPE6
-LAWMAKING_OC=hosung91 kgab search-lawmaking-items --category interpretation --agency-code 1741000 --limit 5
-LAWMAKING_OC=hosung91 kgab get-lawmaking-item-detail --category interpretation --item-id 444468
-LAWMAKING_OC=hosung91 kgab search-lawmaking-items --category example --query 지방자치 --limit 5
-LAWMAKING_OC=hosung91 kgab get-lawmaking-item-detail --category example --item-id 2026000014
+LAWMAKING_OC=your_oc_here kgab search-lawmaking-items --category gov-status --agency-code 1741000 --status-code EA02 --limit 5
+LAWMAKING_OC=your_oc_here kgab get-lawmaking-item-detail --category gov-status --item-id 2000000324302
+LAWMAKING_OC=your_oc_here kgab search-lawmaking-items --category plan --year 2026 --agency-code 1741000 --limit 5
+LAWMAKING_OC=your_oc_here kgab search-lawmaking-items --category notice --agency-code 1741000 --limit 5
+LAWMAKING_OC=your_oc_here kgab get-lawmaking-item-detail --category notice --item-id 86344 --mapping-id 2000000319636 --announce-type TYPE5
+LAWMAKING_OC=your_oc_here kgab search-lawmaking-items --category notice-mod --agency-code 1741000 --limit 5
+LAWMAKING_OC=your_oc_here kgab search-lawmaking-items --category admin-notice --agency-name 행정안전부 --limit 5
+LAWMAKING_OC=your_oc_here kgab get-lawmaking-item-detail --category admin-notice --item-id 46444 --mapping-id 2000000325462 --announce-type TYPE6
+LAWMAKING_OC=your_oc_here kgab search-lawmaking-items --category interpretation --agency-code 1741000 --limit 5
+LAWMAKING_OC=your_oc_here kgab get-lawmaking-item-detail --category interpretation --item-id 444468
+LAWMAKING_OC=your_oc_here kgab search-lawmaking-items --category example --query 지방자치 --limit 5
+LAWMAKING_OC=your_oc_here kgab get-lawmaking-item-detail --category example --item-id 2026000014
 GAZETTE_SERVICE_KEY=your_key_here kgab search-gazette-items --agency-name 행정안전부 --start-date 2026-04-01 --end-date 2026-04-21 --limit 5
 GAZETTE_SERVICE_KEY=your_key_here kgab search-gazette-items --query 입법예고 --agency-name 행정안전부 --limit 5
 kgab search-stat-series 기준금리 --source ecos --limit 3
