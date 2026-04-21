@@ -11,6 +11,7 @@
 
 ### 1. operator-managed secrets
 운영자가 관리하는 키/식별자
+- 법제처 OC (`LAW_OC`)
 - ECOS key
 - 국회 API key
 - 공공데이터포털 service key

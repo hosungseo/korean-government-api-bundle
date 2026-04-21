@@ -1,3 +1,6 @@
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import * as z from "zod/v4";
 import { getLawTextTool, searchLawTool, lawTools } from "./tools/law.js";
 import { assemblyTools, getBillDetailTool, searchBillTool } from "./tools/assembly.js";
 import { bundleTools, resolveSourceBundleTool } from "./tools/bundle.js";
@@ -5,6 +8,19 @@ import { getLawmakingItemDetailTool, lawmakingTools, searchLawmakingItemsTool } 
 import { gazetteTools, searchGazetteItemsTool } from "./tools/gazette.js";
 import { compareStatSeriesTool, getStatSeriesTool, searchStatSeriesTool, statTools } from "./tools/stats.js";
 import { datasetTools, getDatasetMetadataTool, searchPublicDatasetTool } from "./tools/dataset.js";
+
+const TOOL_TEXT_MIME = "application/json";
+
+type JsonSchemaProperty = {
+  type?: string;
+  description?: string;
+};
+
+type JsonSchemaObject = {
+  type?: string;
+  properties?: Record<string, JsonSchemaProperty>;
+  required?: string[];
+};
 
 export const toolCatalog = [...bundleTools, ...lawTools, ...assemblyTools, ...lawmakingTools, ...gazetteTools, ...statTools, ...datasetTools];
 
@@ -41,6 +57,83 @@ export async function runTool(name: string, input: unknown): Promise<unknown> {
   }
 }
 
+function toZodPropertySchema(property: JsonSchemaProperty, required: boolean): z.ZodTypeAny {
+  let schema: z.ZodTypeAny;
+
+  switch (property.type) {
+    case "number":
+      schema = z.number();
+      break;
+    case "integer":
+      schema = z.number().int();
+      break;
+    case "boolean":
+      schema = z.boolean();
+      break;
+    case "string":
+    default:
+      schema = z.string();
+      break;
+  }
+
+  if (property.description) {
+    schema = schema.describe(property.description);
+  }
+
+  return required ? schema : schema.optional();
+}
+
+function toZodInputSchema(inputSchema: JsonSchemaObject | undefined): Record<string, z.ZodTypeAny> {
+  if (!inputSchema || inputSchema.type !== "object") {
+    return {};
+  }
+
+  const required = new Set(inputSchema.required ?? []);
+  const entries = Object.entries(inputSchema.properties ?? {}).map(([key, property]) => [key, toZodPropertySchema(property, required.has(key))] as const);
+
+  return Object.fromEntries(entries);
+}
+
+export function createMcpServer(): McpServer {
+  const server = new McpServer({
+    name: "korean-government-api-bundle",
+    version: "0.1.0"
+  });
+
+  for (const tool of toolCatalog) {
+    server.registerTool(
+      tool.name,
+      {
+        description: tool.description,
+        inputSchema: toZodInputSchema(tool.inputSchema as JsonSchemaObject)
+      },
+      async (input) => {
+        const result = await runTool(tool.name, input);
+        const json = JSON.stringify(result, null, 2);
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: json,
+              mimeType: TOOL_TEXT_MIME
+            }
+          ],
+          structuredContent: result as Record<string, unknown>
+        };
+      }
+    );
+  }
+
+  return server;
+}
+
+export async function startStdioServer(): Promise<void> {
+  const transport = new StdioServerTransport();
+  const server = createMcpServer();
+  await server.connect(transport);
+}
+
 if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href) {
   const [mode, toolName, rawInput] = process.argv.slice(2);
 
@@ -54,5 +147,10 @@ if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).
         console.error(error instanceof Error ? error.message : error);
         process.exitCode = 1;
       });
+  } else {
+    startStdioServer().catch((error) => {
+      console.error(error instanceof Error ? error.message : error);
+      process.exitCode = 1;
+    });
   }
 }

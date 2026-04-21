@@ -10,11 +10,16 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "npm run build && node dist/cli/index.js",
-    "mcp": "npm run build && node dist/mcp/server.js --list-tools",
+    "mcp": "npm run build && node dist/mcp/server.js",
+    "mcp:list-tools": "npm run build && node dist/mcp/server.js --list-tools",
     "lint": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
     "@types/node": "^22.15.21",
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^4.3.6"
   }
 }

@@ -32,8 +32,8 @@ git clone https://github.com/hosungseo/korean-government-api-bundle.git
 cd korean-government-api-bundle
 npm install
 npm run build
-node dist/cli/index.js search-law "행정기본법" --limit 3
-node dist/cli/index.js get-law-text --law-name 행정기본법 --article 제1조
+LAW_OC=your_oc_here node dist/cli/index.js search-law "행정기본법" --limit 3
+LAW_OC=your_oc_here node dist/cli/index.js get-law-text --law-name 행정기본법 --article 제1조
 ASSEMBLY_API_KEY=your_key_here node dist/cli/index.js search-bill --bill-no 2207018
 ASSEMBLY_API_KEY=your_key_here node dist/cli/index.js get-bill-detail --bill-no 2207018
 LAWMAKING_OC=your_oc_here node dist/cli/index.js search-lawmaking-items --category gov-status --agency-code 1741000 --status-code EA02 --limit 5
@@ -60,6 +60,13 @@ node dist/cli/index.js get-dataset-metadata --dataset-id 15108065
 ## MCP 실행 목표 예시
 ```bash
 npm run mcp
+```
+
+실제 MCP 연결 확인은 stdio client에서 `tools/list`, `tools/call` handshake가 되어야 합니다.
+개발용으로는 아래 catalog 확인 스크립트를 함께 둡니다.
+
+```bash
+npm run mcp:list-tools
 ```
 
 ## 현재 구현 범위 주의

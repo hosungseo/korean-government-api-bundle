@@ -7,6 +7,25 @@
 
 이 저장소의 목적은 공공 API를 기관별 목록으로 늘어놓는 것이 아니라, **질문 중심 도구**로 재구성해 사람과 에이전트가 바로 호출할 수 있게 만드는 것입니다.
 
+## Quick start
+
+가장 짧은 첫 성공 경로는 아래입니다.
+
+```bash
+npm install
+npm run build
+LAW_OC=your_oc_here kgab search-law "행정기본법" --limit 3
+LAW_OC=your_oc_here kgab get-law-text --law-name 행정기본법 --article 제1조
+kgab resolve-source-bundle "2207018 법안 상태"
+```
+
+주의:
+- `search_law`, `get_law_text`는 `LAW_OC`가 필요합니다.
+- `search_bill`, `get_bill_detail`는 `ASSEMBLY_API_KEY`가 필요합니다.
+- `search_lawmaking_items`, `get_lawmaking_item_detail`는 `LAWMAKING_OC`가 필요합니다.
+- `search_gazette_items`는 `GAZETTE_SERVICE_KEY`가 필요합니다.
+- `get_stat_series` 일부 경로는 `ECOS_API_KEY` 또는 `KOSIS_API_KEY`가 필요합니다.
+
 ## Scope
 - 법제처 국가법령정보 API
 - 열린국회정보 API
@@ -39,6 +58,18 @@
 - Cursor
 - OpenClaw
 - 기타 MCP 호환 클라이언트
+
+실제 MCP stdio 서버 실행:
+
+```bash
+npm run mcp
+```
+
+개발용 catalog 확인:
+
+```bash
+npm run mcp:list-tools
+```
 
 ### CLI
 ```bash
