@@ -97,6 +97,7 @@ kgab get-dataset-metadata --dataset-id 15108065
 | `docs/security-and-secrets.md` | 시크릿/로깅/보안 원칙 |
 | `docs/sources.md` | 출처 및 참고 표면 |
 | `docs/roadmap.md` | 구현 로드맵 |
+| `site/` | GitHub Pages용 정적 landing page |
 | `docs/MVP.md` | MVP 범위와 도구 정의 |
 | `docs/TOOL-SCHEMA.md` | 도구 입력/출력 contract |
 | `docs/SOURCE-MAP.md` | provider 역할 요약 |
