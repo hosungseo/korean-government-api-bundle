@@ -1,4 +1,5 @@
 import { ProviderError } from "../../core/errors.js";
+import { fetchJsonWithRetry } from "../../core/http.js";
 import { clampLimit, normalizeQueryText } from "../../core/normalize.js";
 import type {
   BundleConfig,
@@ -90,17 +91,21 @@ export async function getStatSeriesProvider(
   const requestUrl = buildEcosSeriesUrl(config, apiKey, input.table_id, start, end, input.item_code);
   const originalUrl = sanitizeEcosUrl(requestUrl, apiKey);
 
-  const response = await fetch(requestUrl, {
+  const payload = await fetchJsonWithRetry<{ StatisticSearch?: { row?: EcosRow[] } }>(requestUrl, {
     headers: {
       "User-Agent": "korean-government-api-bundle/0.1.0"
+    },
+    timeoutMs: 8000,
+    retries: 2,
+    retryDelayMs: 400,
+    errorPrefix: "ECOS"
+  }).catch((error) => {
+    if (error instanceof ProviderError) {
+      throw new ProviderError(error.message, { originalUrl });
     }
+    throw error;
   });
 
-  if (!response.ok) {
-    throw new ProviderError(`ECOS request failed with status ${response.status}`, { originalUrl });
-  }
-
-  const payload = (await response.json()) as { StatisticSearch?: { row?: EcosRow[] } };
   const rows = payload.StatisticSearch?.row ?? [];
   if (rows.length === 0) {
     throw new ProviderError("ECOS returned no rows", { originalUrl, input });

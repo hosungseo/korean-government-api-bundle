@@ -1,4 +1,5 @@
 import { ProviderError } from "../../core/errors.js";
+import { fetchJsonWithRetry } from "../../core/http.js";
 import { clampLimit, normalizeDate, normalizeQueryText } from "../../core/normalize.js";
 import type { BundleConfig, GazetteListItem, SearchGazetteItemsInput } from "../../core/types.js";
 
@@ -117,17 +118,21 @@ export async function searchGazetteItemsProvider(
 
   const requestUrl = `${config.gazette.baseUrl}?${params.toString()}`;
   const maskedRequestUrl = maskGazetteKey(requestUrl, apiKey);
-  const response = await fetch(requestUrl, {
+  const payload = await fetchJsonWithRetry<GazetteApiResponse>(requestUrl, {
     headers: {
       "User-Agent": "Mozilla/5.0"
+    },
+    timeoutMs: 8000,
+    retries: 2,
+    retryDelayMs: 500,
+    errorPrefix: "gazette"
+  }).catch((error) => {
+    if (error instanceof ProviderError) {
+      throw new ProviderError(error.message, { originalUrl: maskedRequestUrl });
     }
+    throw error;
   });
 
-  if (!response.ok) {
-    throw new ProviderError(`gazette request failed with status ${response.status}`, { originalUrl: maskedRequestUrl });
-  }
-
-  const payload = (await response.json()) as GazetteApiResponse;
   const body = payload.response ?? payload;
   if (body.resultCode && body.resultCode !== "0") {
     throw new ProviderError(`gazette API returned resultCode ${body.resultCode}`, { originalUrl: maskedRequestUrl, resultMsg: body.resultMsg });

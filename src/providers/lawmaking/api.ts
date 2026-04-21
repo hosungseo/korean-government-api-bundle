@@ -1,4 +1,5 @@
 import { ProviderError } from "../../core/errors.js";
+import { fetchTextWithRetry } from "../../core/http.js";
 import { clampLimit, decodeXmlEntities, normalizeDate, normalizeQueryText, stripXmlTags } from "../../core/normalize.js";
 import type {
   BundleConfig,
@@ -434,17 +435,16 @@ function filterItems(items: LawmakingListItem[], input: SearchLawmakingItemsInpu
 }
 
 async function fetchXml(url: string): Promise<string> {
-  const response = await fetch(url, {
+  const xml = await fetchTextWithRetry(url, {
     headers: {
       "User-Agent": "Mozilla/5.0"
-    }
+    },
+    timeoutMs: 8000,
+    retries: 2,
+    retryDelayMs: 400,
+    errorPrefix: "lawmaking"
   });
 
-  if (!response.ok) {
-    throw new ProviderError(`lawmaking request failed with status ${response.status}`, { url });
-  }
-
-  const xml = await response.text();
   const retMsg = extractTag(xml, "retMsg");
   if (retMsg && retMsg !== "200") {
     throw new ProviderError(`lawmaking API returned retMsg=${retMsg}`, { url, xml: xml.slice(0, 2000) });

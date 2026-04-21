@@ -1,4 +1,5 @@
 import { ProviderError } from "../../core/errors.js";
+import { fetchJsonWithRetry } from "../../core/http.js";
 import { clampLimit, normalizeQueryText } from "../../core/normalize.js";
 import type {
   BundleConfig,
@@ -48,17 +49,16 @@ function resolveCatalogItem(input: GetStatSeriesInput): KosisSeriesCatalogItem |
 }
 
 async function fetchKosisJson(requestUrl: string): Promise<Array<Record<string, string>>> {
-  const response = await fetch(requestUrl, {
+  const payload = await fetchJsonWithRetry<Array<Record<string, string>> | { err?: string; errMsg?: string }>(requestUrl, {
     headers: {
       "User-Agent": "korean-government-api-bundle/0.1.0"
-    }
+    },
+    timeoutMs: 8000,
+    retries: 2,
+    retryDelayMs: 400,
+    errorPrefix: "KOSIS"
   });
 
-  if (!response.ok) {
-    throw new ProviderError(`KOSIS request failed with status ${response.status}`, { requestUrl });
-  }
-
-  const payload = (await response.json()) as Array<Record<string, string>> | { err?: string; errMsg?: string };
   if (!Array.isArray(payload)) {
     throw new ProviderError("KOSIS returned an error payload", { requestUrl, payload });
   }

@@ -1,4 +1,5 @@
 import { ProviderError } from "../../core/errors.js";
+import { fetchJsonWithRetry } from "../../core/http.js";
 import { clampLimit, normalizeAgeLabel, normalizeDate, normalizeQueryText } from "../../core/normalize.js";
 import type {
   BillTimelineStep,
@@ -91,19 +92,22 @@ function sanitizeOpenApiUrl(input: string): string {
 async function fetchOpenApiRows<T>(endpoint: string, params: Record<string, string>, config: BundleConfig): Promise<{ rows: T[]; originalUrl: string }> {
   const requestUrl = buildOpenApiUrl(endpoint, params, config);
   const originalUrl = sanitizeOpenApiUrl(requestUrl);
-  const response = await fetch(requestUrl, {
+  const payload = await fetchJsonWithRetry<Record<string, OpenApiRowContainer<T>[]> & {
+    RESULT?: { CODE?: string; MESSAGE?: string };
+  }>(requestUrl, {
     headers: {
       "User-Agent": "Mozilla/5.0"
+    },
+    timeoutMs: 8000,
+    retries: 2,
+    retryDelayMs: 400,
+    errorPrefix: `assembly endpoint ${endpoint}`
+  }).catch((error) => {
+    if (error instanceof ProviderError) {
+      throw new ProviderError(error.message, { originalUrl });
     }
+    throw error;
   });
-
-  if (!response.ok) {
-    throw new ProviderError(`assembly endpoint ${endpoint} failed with status ${response.status}`, { originalUrl });
-  }
-
-  const payload = (await response.json()) as Record<string, OpenApiRowContainer<T>[]> & {
-    RESULT?: { CODE?: string; MESSAGE?: string };
-  };
 
   if (payload.RESULT?.CODE && payload.RESULT.CODE !== "INFO-000") {
     throw new ProviderError(payload.RESULT.MESSAGE ?? `assembly endpoint ${endpoint} returned an error`, { originalUrl, payload });

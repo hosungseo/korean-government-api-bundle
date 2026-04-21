@@ -1,4 +1,5 @@
 import { ProviderError } from "../../core/errors.js";
+import { fetchTextWithRetry } from "../../core/http.js";
 import { clampLimit, decodeXmlEntities, normalizeArticleRef, normalizeDate, normalizeQueryText, stripXmlTags } from "../../core/normalize.js";
 import type { BundleConfig, GetLawTextInput, SearchLawInput, SearchLawItem } from "../../core/types.js";
 
@@ -87,17 +88,15 @@ export async function searchLawProvider(input: SearchLawInput, config: BundleCon
   url.searchParams.set("query", query);
   url.searchParams.set("display", String(limit));
 
-  const response = await fetch(url, {
+  const xml = await fetchTextWithRetry(url.toString(), {
     headers: {
       "User-Agent": "korean-government-api-bundle/0.1.0"
-    }
+    },
+    timeoutMs: 8000,
+    retries: 2,
+    retryDelayMs: 400,
+    errorPrefix: "law.go.kr"
   });
-
-  if (!response.ok) {
-    throw new ProviderError(`law.go.kr request failed with status ${response.status}`, { url: url.toString() });
-  }
-
-  const xml = await response.text();
   const items = extractLawBlocks(xml).map((block) => {
     const mst = extractTag(block, "법령일련번호");
     const lawId = extractTag(block, "법령ID");
@@ -147,17 +146,15 @@ export async function getLawTextProvider(
   }
 
   const originalUrl = buildServiceUrl(mst, config);
-  const response = await fetch(originalUrl, {
+  const xml = await fetchTextWithRetry(originalUrl, {
     headers: {
       "User-Agent": "korean-government-api-bundle/0.1.0"
-    }
+    },
+    timeoutMs: 8000,
+    retries: 2,
+    retryDelayMs: 400,
+    errorPrefix: "lawService"
   });
-
-  if (!response.ok) {
-    throw new ProviderError(`lawService request failed with status ${response.status}`, { url: originalUrl });
-  }
-
-  const xml = await response.text();
   const resolvedLawName = lawName ?? extractLawNameFromXml(xml);
   if (!resolvedLawName) {
     throw new ProviderError("could not extract law name from lawService response", { mst });
