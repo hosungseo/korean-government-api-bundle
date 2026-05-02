@@ -140,6 +140,7 @@ kgab get-dataset-metadata --dataset-id 15108065
 | `docs/TOOL-PROVIDER-MAPPING.md` | tool ↔ raw endpoint 매핑 |
 | `docs/SKILL-API-ALIGNMENT.md` | `k-gov-skill`의 API id와 bundle 실행 표면 정합성 메모 |
 | `docs/ASSEMBLY-SMOKE-CHECKLIST.md` | `ASSEMBLY_API_KEY` 확보 직후 실행할 열린국회 실호출 검증 체크리스트 |
+| `inbox/assembly-kosis-key-status.sh` | 키 상태(`PRESENT`/`MISSING`)와 다음 행동을 바로 출력하는 점검 스크립트 |
 
 ## Suggested structure
 ```txt

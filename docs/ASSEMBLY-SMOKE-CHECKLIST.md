@@ -21,6 +21,18 @@ cd /Users/seohoseong/.openclaw/workspace/korean-government-api-bundle
 npm run build
 ```
 
+빠른 실행이 필요하면 아래 원클릭 runbook을 사용할 수 있다.
+
+```bash
+ASSEMBLY_API_KEY=*** bash /Users/seohoseong/.openclaw/workspace/inbox/assembly-smoke-runbook.sh
+```
+
+키 상태를 먼저 확인하려면 아래 명령을 사용한다(출력은 `PRESENT`/`MISSING`만 표시).
+
+```bash
+bash /Users/seohoseong/.openclaw/workspace/inbox/assembly-kosis-key-status.sh
+```
+
 ## 1) 법안 검색 스모크
 
 ```bash
