@@ -139,6 +139,7 @@ kgab get-dataset-metadata --dataset-id 15108065
 | `docs/MATCHING-RULES.md` | 질문 → provider 매칭 규칙 |
 | `docs/TOOL-PROVIDER-MAPPING.md` | tool ↔ raw endpoint 매핑 |
 | `docs/SKILL-API-ALIGNMENT.md` | `k-gov-skill`의 API id와 bundle 실행 표면 정합성 메모 |
+| `docs/ASSEMBLY-SMOKE-CHECKLIST.md` | `ASSEMBLY_API_KEY` 확보 직후 실행할 열린국회 실호출 검증 체크리스트 |
 
 ## Suggested structure
 ```txt
