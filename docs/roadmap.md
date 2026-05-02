@@ -25,6 +25,7 @@
 - `compare_stat_series` 구현 완료
 - 공공데이터포털 기반 `search_public_dataset` 구현 완료
 - 공공데이터포털 기반 `get_dataset_metadata` 구현 완료
+- `k-gov-skill` public-data API id와 bundle 실행 표면 정합성 문서(`docs/SKILL-API-ALIGNMENT.md`) 추가 완료
 
 ## 다음 구현 순서
 ### Phase 4
@@ -33,6 +34,11 @@
 - 입법예고/행정예고 attachment 및 section parser 정교화
 - KOSIS `getMeta(type=ITM)` 기반 catalog 자동 생성/보강
 - KOSIS 지역/성별/연령 default slice를 더 넓은 curated set으로 확장
+
+### Immediate operating priority
+- 구현 우선순위보다 먼저 `ASSEMBLY_API_KEY` 실호출 smoke 재검증 여부를 확인한다.
+- `KOSIS_API_KEY` 확보 전까지 auto-expansion 심화는 blocked로 유지한다.
+- data.go.kr 계열은 새 목록 추가보다 대표 API 하나를 bundle helper까지 더 직접 연결하는 방향이 효율적이다.
 
 ### Phase 5
 - compare / verify 계열을 lawmaking / dataset 쪽으로 확장

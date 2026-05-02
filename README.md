@@ -17,6 +17,7 @@ npm run build
 LAW_OC=your_oc_here kgab search-law "행정기본법" --limit 3
 LAW_OC=your_oc_here kgab get-law-text --law-name 행정기본법 --article 제1조
 kgab resolve-source-bundle "2207018 법안 상태"
+kgab run-resolved-bundle "2207018 법안 상태"
 ```
 
 주의:
@@ -39,6 +40,7 @@ kgab resolve-source-bundle "2207018 법안 상태"
 | Tool | 설명 | 사용자 로그인 |
 | --- | --- | --- |
 | `resolve_source_bundle` | 질문을 어떤 tool/provider로 보낼지 먼저 판별 | 불필요 |
+| `run_resolved_bundle` | 질문을 라우팅한 뒤 추가 입력이 필요 없으면 추천 tool까지 즉시 실행 | 불필요 |
 | `search_law` | 법령명/키워드로 법령 검색 | 불필요 |
 | `get_law_text` | 법령 원문 또는 조문 조회 | 불필요 |
 | `search_bill` | 의안번호/의안명/제안자/위원회 기준 법안 검색 | 불필요 |
@@ -74,6 +76,7 @@ npm run mcp:list-tools
 ### CLI
 ```bash
 kgab resolve-source-bundle "2207018 법안 상태"
+kgab run-resolved-bundle "2207018 법안 상태"
 kgab resolve-source-bundle "행정안전부 입법예고"
 kgab resolve-source-bundle "행정기본법 제1조"
 kgab resolve-source-bundle "기준금리와 주택담보대출금리 비교 ecos:722Y001:0101000 ecos:121Y006:BECBLA01"
@@ -135,6 +138,7 @@ kgab get-dataset-metadata --dataset-id 15108065
 | `docs/SOURCE-REGISTRY.md` | core/expansion provider registry |
 | `docs/MATCHING-RULES.md` | 질문 → provider 매칭 규칙 |
 | `docs/TOOL-PROVIDER-MAPPING.md` | tool ↔ raw endpoint 매핑 |
+| `docs/SKILL-API-ALIGNMENT.md` | `k-gov-skill`의 API id와 bundle 실행 표면 정합성 메모 |
 
 ## Suggested structure
 ```txt
