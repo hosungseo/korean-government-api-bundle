@@ -55,6 +55,9 @@ kgab run-resolved-bundle "2207018 법안 상태"
 | `get_dataset_metadata` | 데이터셋 메타데이터 상세 조회 | 불필요 |
 | `compose_issue_packet` | 이슈별 법령·관보·통계·공공데이터 후보를 하나의 근거 packet으로 합성 | source별 키 필요 가능 |
 | `render_issue_onepager` | issue packet을 1쪽 보고서형 bottom line/facts/risks/actions로 렌더링 | source별 키 필요 가능 |
+| `render_issue_timeline` | issue packet 후보를 시간순 source timeline으로 렌더링 | source별 키 필요 가능 |
+| `check_issue_gaps` | source 공백과 브리핑 준비도를 점검 | source별 키 필요 가능 |
+| `route_issue_next_action` | 다음 작업 경로를 점수화해 추천 | source별 키 필요 가능 |
 
 ## Interface
 ### MCP
@@ -110,6 +113,9 @@ kgab search-public-dataset 주민등록 인구 --limit 5
 kgab get-dataset-metadata --dataset-id 15108065
 kgab compose-issue-packet --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
 kgab render-issue-onepager --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
+kgab render-issue-timeline --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
+kgab check-issue-gaps --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
+kgab route-issue-next-action --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
 ```
 
 ## 시작 순서
@@ -180,6 +186,7 @@ src/
 17. provider fetch 전반에 공통 timeout + retry 적용
 18. ECOS `search_stat_series`에 live metadata fallback 추가, curated catalog 밖의 월간 series도 검색 가능하게 확장
 19. `compose_issue_packet` / `render_issue_onepager` 추가: 법령·관보·통계·공공데이터 후보를 source-first 근거 packet과 1쪽 보고서 초안으로 합성
+20. `render_issue_timeline` / `check_issue_gaps` / `route_issue_next_action` 추가: issue packet을 시간순 맥락, source gap, 다음 작업 경로로 확장
 
 현재 구조는 아래 3층을 기준으로 움직입니다.
 1. raw provider adapters

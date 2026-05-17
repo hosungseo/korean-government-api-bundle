@@ -57,6 +57,55 @@ export const issueTools = [
       required: ["topic"]
     }
   }
+  ,
+  {
+    name: "render_issue_timeline",
+    description: "issue packet을 source별 시간순 맥락으로 정리합니다.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        topic: { type: "string", description: "이슈 주제" },
+        law_query: { type: "string", description: "법령 검색어. 기본값은 topic" },
+        gazette_query: { type: "string", description: "관보 검색어. 기본값은 topic" },
+        stat_query: { type: "string", description: "통계 검색어. 기본값은 topic" },
+        dataset_query: { type: "string", description: "공공데이터 검색어. 기본값은 topic" },
+        limit: { type: "number", description: "source별 최대 후보 수" }
+      },
+      required: ["topic"]
+    }
+  },
+  {
+    name: "check_issue_gaps",
+    description: "issue packet의 source 공백과 브리핑 준비도를 판정합니다.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        topic: { type: "string", description: "이슈 주제" },
+        law_query: { type: "string", description: "법령 검색어. 기본값은 topic" },
+        gazette_query: { type: "string", description: "관보 검색어. 기본값은 topic" },
+        stat_query: { type: "string", description: "통계 검색어. 기본값은 topic" },
+        dataset_query: { type: "string", description: "공공데이터 검색어. 기본값은 topic" },
+        limit: { type: "number", description: "source별 최대 후보 수" }
+      },
+      required: ["topic"]
+    }
+  },
+  {
+    name: "route_issue_next_action",
+    description: "issue gap/evidence 상태를 바탕으로 다음 작업 경로를 추천합니다.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        topic: { type: "string", description: "이슈 주제" },
+        law_query: { type: "string", description: "법령 검색어. 기본값은 topic" },
+        gazette_query: { type: "string", description: "관보 검색어. 기본값은 topic" },
+        stat_query: { type: "string", description: "통계 검색어. 기본값은 topic" },
+        dataset_query: { type: "string", description: "공공데이터 검색어. 기본값은 topic" },
+        limit: { type: "number", description: "source별 최대 후보 수" }
+      },
+      required: ["topic"]
+    }
+  }
 ] as const;
 
 function queryOf(input: IssueInput, key: keyof Pick<IssueInput, "law_query" | "gazette_query" | "stat_query" | "dataset_query">): string {
@@ -157,6 +206,134 @@ export async function renderIssueOnepagerTool(input: IssueInput) {
       "공공데이터 후보의 API 제공 여부와 갱신주기를 확인한다."
     ],
     evidence_matrix: matrix,
+    packet
+  };
+}
+
+
+type TimelineEvent = {
+  date: string;
+  source: string;
+  title: string;
+  note: string;
+  original_url?: string;
+};
+
+type GapCheck = {
+  id: string;
+  label: string;
+  severity: "critical" | "warning" | "info";
+  status: "ok" | "gap" | "weak";
+  evidence: string;
+  recommendation: string;
+};
+
+function sourceItems(packet: Record<string, unknown>, key: string): Array<Record<string, unknown>> {
+  const source = (packet.sources as Record<string, { ok: boolean; result?: { items?: Array<Record<string, unknown>> } }>)[key];
+  return source?.ok ? source.result?.items ?? [] : [];
+}
+
+function normalizeDate(raw: unknown): string {
+  const s = String(raw ?? "").trim();
+  const m = s.match(/(\d{4})[-.](\d{1,2})[-.](\d{1,2})/) ?? s.match(/(\d{4})(\d{2})(\d{2})/);
+  if (m) return `${m[1]}-${m[2].padStart(2, "0")}-${m[3].padStart(2, "0")}`;
+  const ym = s.match(/(\d{4})(\d{2})/);
+  if (ym) return `${ym[1]}-${ym[2]}-01`;
+  return s.slice(0, 10) || "undated";
+}
+
+function titleOf(item: Record<string, unknown>): string {
+  return String(item.law_name ?? item.title ?? item.series_name ?? item.dataset_name ?? item.name ?? "untitled");
+}
+
+function dateOf(item: Record<string, unknown>): string {
+  return normalizeDate(item.effective_date ?? item.publication_date ?? item.proposed_date ?? item.date ?? item.updated_at ?? item.time ?? "");
+}
+
+function addGap(checks: GapCheck[], id: string, label: string, severity: GapCheck["severity"], ok: boolean, evidence: string, recommendation: string): void {
+  checks.push({ id, label, severity, status: ok ? "ok" : severity === "critical" ? "gap" : "weak", evidence, recommendation });
+}
+
+function buildGapAssessment(packet: Record<string, unknown>) {
+  const counts = packet.counts as Record<string, number>;
+  const checks: GapCheck[] = [];
+  addGap(checks, "law", "법령 근거", "critical", counts.law > 0, `${counts.law ?? 0} rows`, "법령 검색어를 더 구체화하고 하위법령/조문 확인으로 이동합니다.");
+  addGap(checks, "gazette", "관보/공식 신호", "warning", counts.gazette > 0, `${counts.gazette ?? 0} rows`, "기관명·정책명·근거법령명으로 관보 검색어를 좁힙니다.");
+  addGap(checks, "stats", "통계 후보", "warning", counts.stats > 0, `${counts.stats ?? 0} rows`, "ECOS/KOSIS/R-ONE 등 직접 지표 후보를 보강합니다.");
+  addGap(checks, "dataset", "공공데이터 후보", "info", counts.dataset > 0, `${counts.dataset ?? 0} rows`, "API 제공 여부와 갱신주기를 확인합니다.");
+  const gaps = checks.filter((c) => c.status === "gap");
+  const weak = checks.filter((c) => c.status === "weak");
+  const score = Math.max(0, 100 - gaps.length * 30 - weak.length * 12);
+  const posture = gaps.length > 0 ? "needs-source-repair" : weak.length > 0 ? "usable-with-caveat" : "ready-for-briefing";
+  return { score, posture, checks, gaps, weak };
+}
+
+export async function renderIssueTimelineTool(input: IssueInput) {
+  const packet = await composeIssuePacketTool(input);
+  const events: TimelineEvent[] = [];
+  for (const item of sourceItems(packet, "law")) events.push({ date: dateOf(item), source: "law.go.kr", title: titleOf(item), note: "법령 후보", original_url: String(item.original_url ?? "") });
+  for (const item of sourceItems(packet, "gazette")) events.push({ date: dateOf(item), source: "mois-gazette", title: titleOf(item), note: "관보/공식 신호", original_url: String(item.original_url ?? "") });
+  for (const item of sourceItems(packet, "stats")) events.push({ date: "undated", source: "stats", title: titleOf(item), note: "통계 후보", original_url: String(item.original_url ?? "") });
+  for (const item of sourceItems(packet, "dataset")) events.push({ date: "undated", source: "data.go.kr", title: titleOf(item), note: "공공데이터 후보", original_url: String(item.original_url ?? "") });
+  events.sort((a, b) => a.date.localeCompare(b.date));
+  return {
+    source: "issue-composer",
+    provider: "korean-government-api-bundle",
+    tool: "render_issue_timeline",
+    query: input,
+    identifier: `issue-timeline:${input.topic}`,
+    summary: `${input.topic} 이슈 timeline을 생성했습니다.`,
+    original_url: packet.original_url,
+    fetched_at: nowIso(),
+    events,
+    packet
+  };
+}
+
+export async function checkIssueGapsTool(input: IssueInput) {
+  const packet = await composeIssuePacketTool(input);
+  const assessment = buildGapAssessment(packet);
+  return {
+    source: "issue-composer",
+    provider: "korean-government-api-bundle",
+    tool: "check_issue_gaps",
+    query: input,
+    identifier: `issue-gaps:${input.topic}`,
+    summary: `${input.topic} 이슈 source gap을 점검했습니다: ${assessment.posture}`,
+    original_url: packet.original_url,
+    fetched_at: nowIso(),
+    assessment,
+    packet
+  };
+}
+
+export async function routeIssueNextActionTool(input: IssueInput) {
+  const packet = await composeIssuePacketTool(input);
+  const assessment = buildGapAssessment(packet);
+  const matrix = packet.evidence_matrix;
+  const high = matrix.filter((r) => r.strength === "high").length;
+  const medium = matrix.filter((r) => r.strength === "medium").length;
+  const weakIds = new Set<string>(assessment.checks.filter((c) => c.status !== "ok").map((c) => c.id));
+  const routes = [
+    { id: "brief-now", label: "1쪽 보고서로 바로 전환", score: 45 + (assessment.posture === "ready-for-briefing" ? 35 : 0) + (high > 0 ? 10 : 0), next: "render_issue_onepager를 실행해 보고용 초안으로 전환합니다." },
+    { id: "legal-deep-dive", label: "법령/조문 심화", score: 35 + (weakIds.has("law") ? 35 : 0) + (high === 0 ? 10 : 0), next: "법령 후보에서 조문·소관·권한 근거를 확인합니다." },
+    { id: "official-signal-narrowing", label: "관보/공식신호 좁히기", score: 35 + (weakIds.has("gazette") ? 30 : 0) + (medium > 1 ? 10 : 0), next: "관보 검색어를 기관명·정책명·근거법령명으로 좁힙니다." },
+    { id: "statistics-support", label: "통계 보강", score: 30 + (weakIds.has("stats") ? 30 : 0), next: "직접 지표와 배경 지표를 분리해 통계 후보를 보강합니다." },
+    { id: "dataset-followup", label: "공공데이터 API 후속확인", score: 30 + (weakIds.has("dataset") ? 25 : 0), next: "데이터셋 API 제공 여부·갱신주기·원자료 다운로드 가능성을 확인합니다." }
+  ].sort((a, b) => b.score - a.score);
+  return {
+    source: "issue-composer",
+    provider: "korean-government-api-bundle",
+    tool: "route_issue_next_action",
+    query: input,
+    identifier: `issue-router:${input.topic}`,
+    summary: `${input.topic} 이슈의 다음 경로는 ${routes[0]?.id}입니다.`,
+    original_url: packet.original_url,
+    fetched_at: nowIso(),
+    context: { posture: assessment.posture, score: assessment.score, evidence_strength: { high, medium, total: matrix.length }, weak_ids: [...weakIds] },
+    recommendation: routes[0],
+    alternatives: routes.slice(1, 4),
+    routes,
     packet
   };
 }
