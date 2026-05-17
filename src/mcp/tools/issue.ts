@@ -106,6 +106,23 @@ export const issueTools = [
       required: ["topic"]
     }
   }
+  ,
+  {
+    name: "render_issue_scenario_lab",
+    description: "issue packet/gap/router를 행정 리스크·질문 playbook·실행 패키지·반대논리로 합성합니다.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        topic: { type: "string", description: "이슈 주제" },
+        law_query: { type: "string", description: "법령 검색어. 기본값은 topic" },
+        gazette_query: { type: "string", description: "관보 검색어. 기본값은 topic" },
+        stat_query: { type: "string", description: "통계 검색어. 기본값은 topic" },
+        dataset_query: { type: "string", description: "공공데이터 검색어. 기본값은 topic" },
+        limit: { type: "number", description: "source별 최대 후보 수" }
+      },
+      required: ["topic"]
+    }
+  }
 ] as const;
 
 function queryOf(input: IssueInput, key: keyof Pick<IssueInput, "law_query" | "gazette_query" | "stat_query" | "dataset_query">): string {
@@ -334,6 +351,85 @@ export async function routeIssueNextActionTool(input: IssueInput) {
     recommendation: routes[0],
     alternatives: routes.slice(1, 4),
     routes,
+    packet
+  };
+}
+
+
+export async function renderIssueScenarioLabTool(input: IssueInput) {
+  const packet = await composeIssuePacketTool(input);
+  const gap = buildGapAssessment(packet);
+  const router = await routeIssueNextActionTool(input);
+  const matrix = packet.evidence_matrix;
+  const top = (role: string) => matrix.find((row: EvidenceRow) => row.role === role);
+  const legal = top("legal basis");
+  const notice = top("official notice");
+  const stat = top("background condition");
+  const dataset = top("data asset");
+  const risks = [
+    {
+      risk: "정책 서사와 법적 근거의 불일치",
+      trigger: legal?.title ?? "법령 근거 후보 없음",
+      evidence: legal?.use ?? "법령 source gap",
+      mitigation: "정책 설명과 법령상 권한·소관 근거를 분리해 확인합니다."
+    },
+    {
+      risk: "공식 신호의 직접 관련성 부족",
+      trigger: notice?.title ?? "관보/공식 신호 후보 없음",
+      evidence: notice?.caveat ?? "관보 source gap",
+      mitigation: "기관명·정책명·근거법령명으로 관보 검색어를 좁힙니다."
+    },
+    {
+      risk: "통계/데이터가 배경 설명에 머무를 가능성",
+      trigger: `${stat?.title ?? "통계 후보 없음"} / ${dataset?.title ?? "데이터셋 후보 없음"}`,
+      evidence: "통계·데이터는 직접 인과근거와 배경조건을 구분해야 합니다.",
+      mitigation: "직접 지표 1개와 배경 지표 1개를 나누어 표시합니다."
+    }
+  ];
+  const question_playbook = [
+    {
+      audience: "장관/차관 예상질문",
+      question: `${input.topic} 이슈가 실제 집행권한과 예산·인력 배분까지 연결되어 있습니까?`,
+      answer_frame: `${legal?.title ?? "관련 법령"} 후보를 근거로 소관·권한·집행수단을 분리해 답변합니다.`
+    },
+    {
+      audience: "국회/상임위 예상질문",
+      question: `공식 신호와 통계가 ${input.topic} 정책 필요성을 충분히 뒷받침합니까?`,
+      answer_frame: "관보는 공식 조치, 법령은 권한, 통계는 배경조건, 데이터셋은 후속 분석 근거로 역할을 나눕니다."
+    },
+    {
+      audience: "실무검토 질문",
+      question: "지금 바로 보고해도 되는가, 아니면 source 보강이 필요한가?",
+      answer_frame: `gap posture=${gap.posture}, router recommendation=${router.recommendation?.id ?? "unknown"} 기준으로 판단합니다.`
+    }
+  ];
+  const action_packet = [
+    { lane: "legal", action: "법령 후보에서 실제 조문·소관·권한 확인", output: "legal basis note" },
+    { lane: "official", action: "관보 검색어를 기관명/정책명/근거법령명으로 재검색", output: "official signal shortlist" },
+    { lane: "statistics", action: "직접 지표와 배경 지표 분리", output: "indicator pair" },
+    { lane: "data", action: "공공데이터 API 제공 여부와 갱신주기 확인", output: "data asset note" }
+  ];
+  const counter_arguments = [
+    { claim: "법령 후보만으로는 실제 권한 근거가 부족하다.", response: "맞습니다. 후보는 출발점이고, 실제 조문 확인을 next action으로 분리합니다." },
+    { claim: "관보 검색결과가 이슈와 직접 관련 없을 수 있다.", response: "맞습니다. matrix caveat와 공식신호 좁히기 route로 표시합니다." },
+    { claim: "통계·데이터는 정책 효과를 증명하지 않는다.", response: "맞습니다. 배경조건과 직접 인과근거를 구분해 사용합니다." }
+  ];
+  return {
+    source: "issue-composer",
+    provider: "korean-government-api-bundle",
+    tool: "render_issue_scenario_lab",
+    query: input,
+    identifier: `issue-scenario:${input.topic}`,
+    summary: `${input.topic} 이슈 scenario lab을 생성했습니다.`,
+    original_url: packet.original_url,
+    fetched_at: nowIso(),
+    posture: gap.posture,
+    recommendation: router.recommendation,
+    risks,
+    question_playbook,
+    action_packet,
+    counter_arguments,
+    evidence_matrix: matrix,
     packet
   };
 }

@@ -3,7 +3,7 @@
 import { getBillDetailTool, searchBillTool } from "../mcp/tools/assembly.js";
 import { resolveSourceBundleTool, runResolvedBundleTool } from "../mcp/tools/bundle.js";
 import { getDatasetMetadataTool, searchPublicDatasetTool } from "../mcp/tools/dataset.js";
-import { checkIssueGapsTool, composeIssuePacketTool, renderIssueOnepagerTool, renderIssueTimelineTool, routeIssueNextActionTool } from "../mcp/tools/issue.js";
+import { checkIssueGapsTool, composeIssuePacketTool, renderIssueOnepagerTool, renderIssueScenarioLabTool, renderIssueTimelineTool, routeIssueNextActionTool } from "../mcp/tools/issue.js";
 import { getLawTextTool, searchLawTool } from "../mcp/tools/law.js";
 import { getLawmakingItemDetailTool, searchLawmakingItemsTool } from "../mcp/tools/lawmaking.js";
 import { searchGazetteItemsTool } from "../mcp/tools/gazette.js";
@@ -34,6 +34,7 @@ function printUsage(): void {
   kgab render-issue-timeline --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--limit N]
   kgab check-issue-gaps --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--limit N]
   kgab route-issue-next-action --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--limit N]
+  kgab render-issue-scenario-lab --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--limit N]
   kgab mcp --list-tools
   kgab mcp run <tool_name> '<json>'`);
 }
@@ -314,6 +315,12 @@ async function main(): Promise<void> {
 
   if (command === "route-issue-next-action" || command === "route_issue_next_action") {
     const result = await routeIssueNextActionTool({ topic: parseOption(rest, "--topic") ?? rest.filter((arg) => !arg.startsWith("--")).join(" ").trim(), law_query: parseOption(rest, "--law-query"), gazette_query: parseOption(rest, "--gazette-query"), stat_query: parseOption(rest, "--stat-query"), dataset_query: parseOption(rest, "--dataset-query"), limit: parseLimit(rest) });
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  if (command === "render-issue-scenario-lab" || command === "render_issue_scenario_lab") {
+    const result = await renderIssueScenarioLabTool({ topic: parseOption(rest, "--topic") ?? rest.filter((arg) => !arg.startsWith("--")).join(" ").trim(), law_query: parseOption(rest, "--law-query"), gazette_query: parseOption(rest, "--gazette-query"), stat_query: parseOption(rest, "--stat-query"), dataset_query: parseOption(rest, "--dataset-query"), limit: parseLimit(rest) });
     console.log(JSON.stringify(result, null, 2));
     return;
   }

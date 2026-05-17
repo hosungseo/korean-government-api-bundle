@@ -58,6 +58,7 @@ kgab run-resolved-bundle "2207018 법안 상태"
 | `render_issue_timeline` | issue packet 후보를 시간순 source timeline으로 렌더링 | source별 키 필요 가능 |
 | `check_issue_gaps` | source 공백과 브리핑 준비도를 점검 | source별 키 필요 가능 |
 | `route_issue_next_action` | 다음 작업 경로를 점수화해 추천 | source별 키 필요 가능 |
+| `render_issue_scenario_lab` | 행정 리스크·질문 playbook·실행 패키지·반대논리로 합성 | source별 키 필요 가능 |
 
 ## Interface
 ### MCP
@@ -116,6 +117,7 @@ kgab render-issue-onepager --topic 공급망 --law-query 정부조직법 --gazet
 kgab render-issue-timeline --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
 kgab check-issue-gaps --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
 kgab route-issue-next-action --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
+kgab render-issue-scenario-lab --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
 ```
 
 ## 시작 순서
@@ -187,6 +189,7 @@ src/
 18. ECOS `search_stat_series`에 live metadata fallback 추가, curated catalog 밖의 월간 series도 검색 가능하게 확장
 19. `compose_issue_packet` / `render_issue_onepager` 추가: 법령·관보·통계·공공데이터 후보를 source-first 근거 packet과 1쪽 보고서 초안으로 합성
 20. `render_issue_timeline` / `check_issue_gaps` / `route_issue_next_action` 추가: issue packet을 시간순 맥락, source gap, 다음 작업 경로로 확장
+21. `render_issue_scenario_lab` 추가: issue packet/gap/router를 행정 리스크, 예상질문, 실행 패키지, 반대논리로 합성
 
 현재 구조는 아래 3층을 기준으로 움직입니다.
 1. raw provider adapters
