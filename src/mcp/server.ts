@@ -3,11 +3,12 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import * as z from "zod/v4";
 import { getLawTextTool, searchLawTool, lawTools } from "./tools/law.js";
 import { assemblyTools, getBillDetailTool, searchBillTool } from "./tools/assembly.js";
-import { bundleTools, resolveSourceBundleTool } from "./tools/bundle.js";
+import { bundleTools, resolveSourceBundleTool, runResolvedBundleTool } from "./tools/bundle.js";
 import { getLawmakingItemDetailTool, lawmakingTools, searchLawmakingItemsTool } from "./tools/lawmaking.js";
 import { gazetteTools, searchGazetteItemsTool } from "./tools/gazette.js";
 import { compareStatSeriesTool, getStatSeriesTool, searchStatSeriesTool, statTools } from "./tools/stats.js";
 import { datasetTools, getDatasetMetadataTool, searchPublicDatasetTool } from "./tools/dataset.js";
+import { composeIssuePacketTool, issueTools, renderIssueOnepagerTool } from "./tools/issue.js";
 
 const TOOL_TEXT_MIME = "application/json";
 
@@ -22,7 +23,7 @@ type JsonSchemaObject = {
   required?: string[];
 };
 
-export const toolCatalog = [...bundleTools, ...lawTools, ...assemblyTools, ...lawmakingTools, ...gazetteTools, ...statTools, ...datasetTools];
+export const toolCatalog = [...bundleTools, ...lawTools, ...assemblyTools, ...lawmakingTools, ...gazetteTools, ...statTools, ...datasetTools, ...issueTools];
 
 export async function runTool(name: string, input: unknown): Promise<unknown> {
   switch (name) {
@@ -30,6 +31,8 @@ export async function runTool(name: string, input: unknown): Promise<unknown> {
       return searchLawTool(input as { query: string; limit?: number });
     case "resolve_source_bundle":
       return resolveSourceBundleTool(input as { query: string });
+    case "run_resolved_bundle":
+      return runResolvedBundleTool(input as { query: string }, runTool);
     case "get_law_text":
       return getLawTextTool(input as { law_name?: string; mst?: string; article_ref?: string });
     case "search_bill":
@@ -52,6 +55,10 @@ export async function runTool(name: string, input: unknown): Promise<unknown> {
       return searchPublicDatasetTool(input as { query: string; limit?: number });
     case "get_dataset_metadata":
       return getDatasetMetadataTool(input as { dataset_id?: string; service_id?: string });
+    case "compose_issue_packet":
+      return composeIssuePacketTool(input as { topic: string; law_query?: string; gazette_query?: string; stat_query?: string; dataset_query?: string; limit?: number });
+    case "render_issue_onepager":
+      return renderIssueOnepagerTool(input as { topic: string; law_query?: string; gazette_query?: string; stat_query?: string; dataset_query?: string; limit?: number });
     default:
       throw new Error(`Unsupported tool: ${name}`);
   }

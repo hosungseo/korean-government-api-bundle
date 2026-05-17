@@ -231,6 +231,10 @@ export interface ResolveSourceBundleInput {
   query: string;
 }
 
+export interface RunResolvedBundleInput {
+  query: string;
+}
+
 export interface BundleResolvedEntity {
   label: string;
   value: string;
@@ -262,6 +266,14 @@ export interface ResolveSourceBundleResponse extends ToolResponseBase<ResolveSou
   handoff_message: string;
   follow_up_question: string | null;
   disambiguation_options: BundleDisambiguationOption[];
+}
+
+export interface RunResolvedBundleResponse extends ToolResponseBase<RunResolvedBundleInput> {
+  resolution: ResolveSourceBundleResponse;
+  executed: boolean;
+  executed_tool: string | null;
+  execution_input: Record<string, BundleSuggestedInputValue> | null;
+  execution_result: unknown | null;
 }
 
 export interface SearchStatSeriesInput {

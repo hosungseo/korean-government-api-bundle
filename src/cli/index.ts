@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
 import { getBillDetailTool, searchBillTool } from "../mcp/tools/assembly.js";
-import { resolveSourceBundleTool } from "../mcp/tools/bundle.js";
+import { resolveSourceBundleTool, runResolvedBundleTool } from "../mcp/tools/bundle.js";
 import { getDatasetMetadataTool, searchPublicDatasetTool } from "../mcp/tools/dataset.js";
+import { composeIssuePacketTool, renderIssueOnepagerTool } from "../mcp/tools/issue.js";
 import { getLawTextTool, searchLawTool } from "../mcp/tools/law.js";
 import { getLawmakingItemDetailTool, searchLawmakingItemsTool } from "../mcp/tools/lawmaking.js";
 import { searchGazetteItemsTool } from "../mcp/tools/gazette.js";
@@ -13,6 +14,7 @@ function printUsage(): void {
   kgab search-law <query> [--limit N]
   kgab search_law <query> [--limit N]
   kgab resolve-source-bundle <query>
+  kgab run-resolved-bundle <query>
   kgab get-law-text --mst <MST> [--article 제1조]
   kgab get-law-text --law-name <법령명> [--article 제1조]
   kgab search-bill --bill-no <의안번호>
@@ -27,6 +29,8 @@ function printUsage(): void {
   kgab compare-stat-series --id-a <IDENTIFIER> --id-b <IDENTIFIER> [--label-a <이름>] [--label-b <이름>] [--org-a <ORG_ID>] [--org-b <ORG_ID>] --start YYYYMM --end YYYYMM
   kgab search-public-dataset <query> [--limit N]
   kgab get-dataset-metadata --dataset-id <ID>
+  kgab compose-issue-packet --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--limit N]
+  kgab render-issue-onepager --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--limit N]
   kgab mcp --list-tools
   kgab mcp run <tool_name> '<json>'`);
 }
@@ -88,6 +92,14 @@ async function main(): Promise<void> {
   if (command === "resolve-source-bundle" || command === "resolve_source_bundle") {
     const query = rest.join(" ").trim();
     const result = await resolveSourceBundleTool({ query });
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  if (command === "run-resolved-bundle" || command === "run_resolved_bundle") {
+    const { runTool } = await import("../mcp/server.js");
+    const query = rest.join(" ").trim();
+    const result = await runResolvedBundleTool({ query }, runTool);
     console.log(JSON.stringify(result, null, 2));
     return;
   }
@@ -255,6 +267,32 @@ async function main(): Promise<void> {
     const datasetId = parseOption(rest, "--dataset-id");
     const serviceId = parseOption(rest, "--service-id");
     const result = await getDatasetMetadataTool({ dataset_id: datasetId, service_id: serviceId });
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  if (command === "compose-issue-packet" || command === "compose_issue_packet") {
+    const result = await composeIssuePacketTool({
+      topic: parseOption(rest, "--topic") ?? rest.filter((arg) => !arg.startsWith("--")).join(" ").trim(),
+      law_query: parseOption(rest, "--law-query"),
+      gazette_query: parseOption(rest, "--gazette-query"),
+      stat_query: parseOption(rest, "--stat-query"),
+      dataset_query: parseOption(rest, "--dataset-query"),
+      limit: parseLimit(rest)
+    });
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  if (command === "render-issue-onepager" || command === "render_issue_onepager") {
+    const result = await renderIssueOnepagerTool({
+      topic: parseOption(rest, "--topic") ?? rest.filter((arg) => !arg.startsWith("--")).join(" ").trim(),
+      law_query: parseOption(rest, "--law-query"),
+      gazette_query: parseOption(rest, "--gazette-query"),
+      stat_query: parseOption(rest, "--stat-query"),
+      dataset_query: parseOption(rest, "--dataset-query"),
+      limit: parseLimit(rest)
+    });
     console.log(JSON.stringify(result, null, 2));
     return;
   }
