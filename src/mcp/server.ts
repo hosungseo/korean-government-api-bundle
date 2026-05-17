@@ -8,7 +8,7 @@ import { getLawmakingItemDetailTool, lawmakingTools, searchLawmakingItemsTool } 
 import { gazetteTools, searchGazetteItemsTool } from "./tools/gazette.js";
 import { compareStatSeriesTool, getStatSeriesTool, searchStatSeriesTool, statTools } from "./tools/stats.js";
 import { datasetTools, getDatasetMetadataTool, searchPublicDatasetTool } from "./tools/dataset.js";
-import { checkIssueGapsTool, composeIssuePacketTool, issueTools, renderIssueOnepagerTool, renderIssueScenarioLabTool, renderIssueTimelineTool, routeIssueNextActionTool } from "./tools/issue.js";
+import { checkIssueGapsTool, composeIssuePacketTool, issueTools, renderIssueBriefTool, renderIssueEvidenceMatrixTool, renderIssueOnepagerTool, renderIssueScenarioLabTool, renderIssueTimelineTool, routeIssueNextActionTool } from "./tools/issue.js";
 
 const TOOL_TEXT_MIME = "application/json";
 
@@ -59,6 +59,10 @@ export async function runTool(name: string, input: unknown): Promise<unknown> {
       return composeIssuePacketTool(input as { topic: string; law_query?: string; gazette_query?: string; stat_query?: string; dataset_query?: string; limit?: number });
     case "render_issue_onepager":
       return renderIssueOnepagerTool(input as { topic: string; law_query?: string; gazette_query?: string; stat_query?: string; dataset_query?: string; limit?: number });
+    case "render_issue_brief":
+      return renderIssueBriefTool(input as { topic: string; law_query?: string; gazette_query?: string; stat_query?: string; dataset_query?: string; limit?: number });
+    case "render_issue_evidence_matrix":
+      return renderIssueEvidenceMatrixTool(input as { topic: string; law_query?: string; gazette_query?: string; stat_query?: string; dataset_query?: string; limit?: number });
     case "render_issue_timeline":
       return renderIssueTimelineTool(input as { topic: string; law_query?: string; gazette_query?: string; stat_query?: string; dataset_query?: string; limit?: number });
     case "check_issue_gaps":

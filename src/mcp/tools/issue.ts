@@ -123,6 +123,39 @@ export const issueTools = [
       required: ["topic"]
     }
   }
+  ,
+  {
+    name: "render_issue_brief",
+    description: "issue packet을 실무 브리핑 구조(lead/legal/official/stat/data/questions/actions)로 렌더링합니다.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        topic: { type: "string", description: "이슈 주제" },
+        law_query: { type: "string", description: "법령 검색어. 기본값은 topic" },
+        gazette_query: { type: "string", description: "관보 검색어. 기본값은 topic" },
+        stat_query: { type: "string", description: "통계 검색어. 기본값은 topic" },
+        dataset_query: { type: "string", description: "공공데이터 검색어. 기본값은 topic" },
+        limit: { type: "number", description: "source별 최대 후보 수" }
+      },
+      required: ["topic"]
+    }
+  },
+  {
+    name: "render_issue_evidence_matrix",
+    description: "issue packet의 source별 근거 역할·강도·용도·주의점을 독립 evidence matrix로 반환합니다.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        topic: { type: "string", description: "이슈 주제" },
+        law_query: { type: "string", description: "법령 검색어. 기본값은 topic" },
+        gazette_query: { type: "string", description: "관보 검색어. 기본값은 topic" },
+        stat_query: { type: "string", description: "통계 검색어. 기본값은 topic" },
+        dataset_query: { type: "string", description: "공공데이터 검색어. 기본값은 topic" },
+        limit: { type: "number", description: "source별 최대 후보 수" }
+      },
+      required: ["topic"]
+    }
+  }
 ] as const;
 
 function queryOf(input: IssueInput, key: keyof Pick<IssueInput, "law_query" | "gazette_query" | "stat_query" | "dataset_query">): string {
@@ -429,6 +462,87 @@ export async function renderIssueScenarioLabTool(input: IssueInput) {
     question_playbook,
     action_packet,
     counter_arguments,
+    evidence_matrix: matrix,
+    packet
+  };
+}
+
+
+export async function renderIssueEvidenceMatrixTool(input: IssueInput) {
+  const packet = await composeIssuePacketTool(input);
+  return {
+    source: "issue-composer",
+    provider: "korean-government-api-bundle",
+    tool: "render_issue_evidence_matrix",
+    query: input,
+    identifier: `issue-matrix:${input.topic}`,
+    summary: `${input.topic} 이슈 evidence matrix를 생성했습니다.`,
+    original_url: packet.original_url,
+    fetched_at: nowIso(),
+    rows: packet.evidence_matrix,
+    source_health: packet.source_health,
+    counts: packet.counts,
+    packet
+  };
+}
+
+export async function renderIssueBriefTool(input: IssueInput) {
+  const packet = await composeIssuePacketTool(input);
+  const gap = buildGapAssessment(packet);
+  const matrix = packet.evidence_matrix;
+  const top = (role: string) => matrix.find((row: EvidenceRow) => row.role === role);
+  const legal = top("legal basis");
+  const notice = top("official notice");
+  const stat = top("background condition");
+  const dataset = top("data asset");
+  const questions = [
+    `${input.topic} 이슈의 법령상 소관·권한 근거는 무엇인가?`,
+    `관보/공식 신호가 ${input.topic}과 직접 연결되는가, 아니면 배경 신호인가?`,
+    `통계와 공공데이터는 정책 필요성의 직접 근거인가, 배경 설명인가?`
+  ];
+  return {
+    source: "issue-composer",
+    provider: "korean-government-api-bundle",
+    tool: "render_issue_brief",
+    query: input,
+    identifier: `issue-brief:${input.topic}`,
+    summary: `${input.topic} 이슈 실무 브리핑을 생성했습니다.`,
+    original_url: packet.original_url,
+    fetched_at: nowIso(),
+    posture: gap.posture,
+    lead: {
+      topic: input.topic,
+      bottom_line: gap.posture === "ready-for-briefing"
+        ? "핵심 source가 모두 살아 있어 브리핑 초안으로 전환 가능합니다."
+        : "일부 source 공백이 있어 확인 과제를 먼저 제시하는 방식이 안전합니다."
+    },
+    legal_context: {
+      title: legal?.title ?? "확인 필요",
+      use: legal?.use ?? "법령 후보 확인 필요",
+      caveat: legal?.caveat ?? "법령 source gap"
+    },
+    official_signals: {
+      title: notice?.title ?? "확인 필요",
+      use: notice?.use ?? "공식 신호 확인 필요",
+      caveat: notice?.caveat ?? "관보 source gap"
+    },
+    statistics_context: {
+      title: stat?.title ?? "확인 필요",
+      use: stat?.use ?? "통계 후보 확인 필요",
+      caveat: stat?.caveat ?? "통계 source gap"
+    },
+    data_context: {
+      title: dataset?.title ?? "확인 필요",
+      use: dataset?.use ?? "공공데이터 후보 확인 필요",
+      caveat: dataset?.caveat ?? "데이터 source gap"
+    },
+    question_forecast: questions,
+    next_actions: [
+      "법령 후보에서 실제 조문·소관·권한을 확인한다.",
+      "관보 후보를 기관명/정책명/근거법령명으로 좁힌다.",
+      "통계 후보를 직접 지표와 배경 지표로 분류한다.",
+      "공공데이터 후보의 API 제공 여부와 갱신주기를 확인한다."
+    ],
     evidence_matrix: matrix,
     packet
   };

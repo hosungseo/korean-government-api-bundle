@@ -55,6 +55,8 @@ kgab run-resolved-bundle "2207018 법안 상태"
 | `get_dataset_metadata` | 데이터셋 메타데이터 상세 조회 | 불필요 |
 | `compose_issue_packet` | 이슈별 법령·관보·통계·공공데이터 후보를 하나의 근거 packet으로 합성 | source별 키 필요 가능 |
 | `render_issue_onepager` | issue packet을 1쪽 보고서형 bottom line/facts/risks/actions로 렌더링 | source별 키 필요 가능 |
+| `render_issue_brief` | issue packet을 실무 브리핑 구조로 렌더링 | source별 키 필요 가능 |
+| `render_issue_evidence_matrix` | source별 근거 역할·강도·용도·주의점 행렬을 반환 | source별 키 필요 가능 |
 | `render_issue_timeline` | issue packet 후보를 시간순 source timeline으로 렌더링 | source별 키 필요 가능 |
 | `check_issue_gaps` | source 공백과 브리핑 준비도를 점검 | source별 키 필요 가능 |
 | `route_issue_next_action` | 다음 작업 경로를 점수화해 추천 | source별 키 필요 가능 |
@@ -114,6 +116,8 @@ kgab search-public-dataset 주민등록 인구 --limit 5
 kgab get-dataset-metadata --dataset-id 15108065
 kgab compose-issue-packet --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
 kgab render-issue-onepager --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
+kgab render-issue-brief --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
+kgab render-issue-evidence-matrix --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
 kgab render-issue-timeline --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
 kgab check-issue-gaps --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
 kgab route-issue-next-action --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
@@ -190,6 +194,7 @@ src/
 19. `compose_issue_packet` / `render_issue_onepager` 추가: 법령·관보·통계·공공데이터 후보를 source-first 근거 packet과 1쪽 보고서 초안으로 합성
 20. `render_issue_timeline` / `check_issue_gaps` / `route_issue_next_action` 추가: issue packet을 시간순 맥락, source gap, 다음 작업 경로로 확장
 21. `render_issue_scenario_lab` 추가: issue packet/gap/router를 행정 리스크, 예상질문, 실행 패키지, 반대논리로 합성
+22. `render_issue_brief` / `render_issue_evidence_matrix` 추가: demo의 brief/matrix 레이어까지 bundle 정식 실행 표면으로 승격
 
 현재 구조는 아래 3층을 기준으로 움직입니다.
 1. raw provider adapters
