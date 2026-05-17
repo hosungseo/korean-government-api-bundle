@@ -38,6 +38,7 @@ function printUsage(): void {
   kgab route-issue-next-action --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--limit N]
   kgab render-issue-scenario-lab --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--limit N]
   kgab build-issue-dossier --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--limit N]
+  kgab build-issue-dossier-markdown --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--limit N]
   kgab mcp --list-tools
   kgab mcp run <tool_name> '<json>'`);
 }
@@ -343,6 +344,12 @@ async function main(): Promise<void> {
   if (command === "build-issue-dossier" || command === "build_issue_dossier") {
     const result = await buildIssueDossierTool({ topic: parseOption(rest, "--topic") ?? rest.filter((arg) => !arg.startsWith("--")).join(" ").trim(), law_query: parseOption(rest, "--law-query"), gazette_query: parseOption(rest, "--gazette-query"), stat_query: parseOption(rest, "--stat-query"), dataset_query: parseOption(rest, "--dataset-query"), limit: parseLimit(rest) });
     console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  if (command === "build-issue-dossier-markdown" || command === "build_issue_dossier_markdown") {
+    const result = await buildIssueDossierTool({ topic: parseOption(rest, "--topic") ?? rest.filter((arg) => !arg.startsWith("--")).join(" ").trim(), law_query: parseOption(rest, "--law-query"), gazette_query: parseOption(rest, "--gazette-query"), stat_query: parseOption(rest, "--stat-query"), dataset_query: parseOption(rest, "--dataset-query"), limit: parseLimit(rest) });
+    console.log(String(result.dossier_markdown ?? ""));
     return;
   }
 
