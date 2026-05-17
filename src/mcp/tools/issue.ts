@@ -1,8 +1,10 @@
 import { nowIso } from "../../core/citations.js";
+import { searchBillTool } from "./assembly.js";
 import { InputError } from "../../core/errors.js";
 import { searchPublicDatasetTool } from "./dataset.js";
 import { searchGazetteItemsTool } from "./gazette.js";
 import { searchLawTool } from "./law.js";
+import { searchLawmakingItemsTool } from "./lawmaking.js";
 import { searchStatSeriesTool } from "./stats.js";
 
 type IssueInput = {
@@ -11,6 +13,8 @@ type IssueInput = {
   gazette_query?: string;
   stat_query?: string;
   dataset_query?: string;
+  bill_query?: string;
+  lawmaking_query?: string;
   limit?: number;
 };
 
@@ -36,6 +40,8 @@ export const issueTools = [
         gazette_query: { type: "string", description: "관보 검색어. 기본값은 topic" },
         stat_query: { type: "string", description: "통계 검색어. 기본값은 topic" },
         dataset_query: { type: "string", description: "공공데이터 검색어. 기본값은 topic" },
+        bill_query: { type: "string", description: "국회 의안 검색어. 기본값은 topic" },
+        lawmaking_query: { type: "string", description: "국민참여입법센터 검색어. 기본값은 topic" },
         limit: { type: "number", description: "source별 최대 후보 수" }
       },
       required: ["topic"]
@@ -52,6 +58,8 @@ export const issueTools = [
         gazette_query: { type: "string", description: "관보 검색어. 기본값은 topic" },
         stat_query: { type: "string", description: "통계 검색어. 기본값은 topic" },
         dataset_query: { type: "string", description: "공공데이터 검색어. 기본값은 topic" },
+        bill_query: { type: "string", description: "국회 의안 검색어. 기본값은 topic" },
+        lawmaking_query: { type: "string", description: "국민참여입법센터 검색어. 기본값은 topic" },
         limit: { type: "number", description: "source별 최대 후보 수" }
       },
       required: ["topic"]
@@ -69,6 +77,8 @@ export const issueTools = [
         gazette_query: { type: "string", description: "관보 검색어. 기본값은 topic" },
         stat_query: { type: "string", description: "통계 검색어. 기본값은 topic" },
         dataset_query: { type: "string", description: "공공데이터 검색어. 기본값은 topic" },
+        bill_query: { type: "string", description: "국회 의안 검색어. 기본값은 topic" },
+        lawmaking_query: { type: "string", description: "국민참여입법센터 검색어. 기본값은 topic" },
         limit: { type: "number", description: "source별 최대 후보 수" }
       },
       required: ["topic"]
@@ -85,6 +95,8 @@ export const issueTools = [
         gazette_query: { type: "string", description: "관보 검색어. 기본값은 topic" },
         stat_query: { type: "string", description: "통계 검색어. 기본값은 topic" },
         dataset_query: { type: "string", description: "공공데이터 검색어. 기본값은 topic" },
+        bill_query: { type: "string", description: "국회 의안 검색어. 기본값은 topic" },
+        lawmaking_query: { type: "string", description: "국민참여입법센터 검색어. 기본값은 topic" },
         limit: { type: "number", description: "source별 최대 후보 수" }
       },
       required: ["topic"]
@@ -101,6 +113,8 @@ export const issueTools = [
         gazette_query: { type: "string", description: "관보 검색어. 기본값은 topic" },
         stat_query: { type: "string", description: "통계 검색어. 기본값은 topic" },
         dataset_query: { type: "string", description: "공공데이터 검색어. 기본값은 topic" },
+        bill_query: { type: "string", description: "국회 의안 검색어. 기본값은 topic" },
+        lawmaking_query: { type: "string", description: "국민참여입법센터 검색어. 기본값은 topic" },
         limit: { type: "number", description: "source별 최대 후보 수" }
       },
       required: ["topic"]
@@ -118,6 +132,8 @@ export const issueTools = [
         gazette_query: { type: "string", description: "관보 검색어. 기본값은 topic" },
         stat_query: { type: "string", description: "통계 검색어. 기본값은 topic" },
         dataset_query: { type: "string", description: "공공데이터 검색어. 기본값은 topic" },
+        bill_query: { type: "string", description: "국회 의안 검색어. 기본값은 topic" },
+        lawmaking_query: { type: "string", description: "국민참여입법센터 검색어. 기본값은 topic" },
         limit: { type: "number", description: "source별 최대 후보 수" }
       },
       required: ["topic"]
@@ -135,6 +151,8 @@ export const issueTools = [
         gazette_query: { type: "string", description: "관보 검색어. 기본값은 topic" },
         stat_query: { type: "string", description: "통계 검색어. 기본값은 topic" },
         dataset_query: { type: "string", description: "공공데이터 검색어. 기본값은 topic" },
+        bill_query: { type: "string", description: "국회 의안 검색어. 기본값은 topic" },
+        lawmaking_query: { type: "string", description: "국민참여입법센터 검색어. 기본값은 topic" },
         limit: { type: "number", description: "source별 최대 후보 수" }
       },
       required: ["topic"]
@@ -151,6 +169,8 @@ export const issueTools = [
         gazette_query: { type: "string", description: "관보 검색어. 기본값은 topic" },
         stat_query: { type: "string", description: "통계 검색어. 기본값은 topic" },
         dataset_query: { type: "string", description: "공공데이터 검색어. 기본값은 topic" },
+        bill_query: { type: "string", description: "국회 의안 검색어. 기본값은 topic" },
+        lawmaking_query: { type: "string", description: "국민참여입법센터 검색어. 기본값은 topic" },
         limit: { type: "number", description: "source별 최대 후보 수" }
       },
       required: ["topic"]
@@ -168,6 +188,8 @@ export const issueTools = [
         gazette_query: { type: "string", description: "관보 검색어. 기본값은 topic" },
         stat_query: { type: "string", description: "통계 검색어. 기본값은 topic" },
         dataset_query: { type: "string", description: "공공데이터 검색어. 기본값은 topic" },
+        bill_query: { type: "string", description: "국회 의안 검색어. 기본값은 topic" },
+        lawmaking_query: { type: "string", description: "국민참여입법센터 검색어. 기본값은 topic" },
         limit: { type: "number", description: "source별 최대 후보 수" }
       },
       required: ["topic"]
@@ -175,7 +197,7 @@ export const issueTools = [
   }
 ] as const;
 
-function queryOf(input: IssueInput, key: keyof Pick<IssueInput, "law_query" | "gazette_query" | "stat_query" | "dataset_query">): string {
+function queryOf(input: IssueInput, key: keyof Pick<IssueInput, "law_query" | "gazette_query" | "stat_query" | "dataset_query" | "bill_query" | "lawmaking_query">): string {
   return input[key]?.trim() || input.topic.trim();
 }
 
@@ -191,7 +213,7 @@ function firstTitle(value: unknown): string | undefined {
   const items = (value as { items?: Array<Record<string, unknown>> }).items ?? [];
   const first = items[0];
   if (!first) return undefined;
-  return String(first.law_name ?? first.title ?? first.series_name ?? first.dataset_name ?? first.name ?? "").trim() || undefined;
+  return String(first.law_name ?? first.bill_name ?? first.title ?? first.series_name ?? first.dataset_name ?? first.name ?? "").trim() || undefined;
 }
 
 function firstUrl(value: unknown): string | undefined {
@@ -210,20 +232,27 @@ function buildRowsFromSources(sources: Record<string, { ok: boolean; result?: un
   if (sources.gazette?.ok) rows.push({ role: "official notice", source: "mois-gazette", title: firstTitle(sources.gazette.result) ?? "관보 후보 없음", strength: "medium", use: "고시·공고·처분 등 공식 신호를 확인합니다.", caveat: "검색어가 넓으면 직접 관련성이 약할 수 있습니다.", original_url: firstUrl(sources.gazette.result) });
   if (sources.stats?.ok) rows.push({ role: "background condition", source: "stats", title: firstTitle(sources.stats.result) ?? "통계 후보 없음", strength: "low", use: "배경 지표 후보를 찾습니다.", caveat: "통계 후보는 직접 인과 근거가 아닙니다.", original_url: firstUrl(sources.stats.result) });
   if (sources.dataset?.ok) rows.push({ role: "data asset", source: "data.go.kr", title: firstTitle(sources.dataset.result) ?? "데이터셋 후보 없음", strength: "medium", use: "후속 분석에 쓸 공개 데이터 자산을 찾습니다.", caveat: "실제 API 제공 여부와 갱신주기를 별도 확인해야 합니다.", original_url: firstUrl(sources.dataset.result) });
+  if (sources.bill?.ok) rows.push({ role: "legislative agenda", source: "open.assembly.go.kr", title: firstTitle(sources.bill.result) ?? "의안 후보 없음", strength: "medium", use: "국회 의안·상임위 관심 신호를 확인합니다.", caveat: "의안 후보는 정책 집행 근거가 아니라 정치/입법 agenda 신호입니다.", original_url: firstUrl(sources.bill.result) });
+  if (sources.lawmaking?.ok) rows.push({ role: "lawmaking pipeline", source: "lawmaking.go.kr", title: firstTitle(sources.lawmaking.result) ?? "입법센터 후보 없음", strength: "medium", use: "입법예고·입법현황 등 제도화 pipeline 신호를 확인합니다.", caveat: "category와 단계에 따라 실제 효력/진행상태가 다릅니다.", original_url: firstUrl(sources.lawmaking.result) });
+  for (const [key, value] of Object.entries(sources)) {
+    if (!value.ok) rows.push({ role: "source gap", source: key, title: `${key} source error`, strength: "low", use: "해당 source를 실행했지만 실패했습니다.", caveat: "error" in value ? String(value.error) : "unknown error" });
+  }
   return rows;
 }
 
 export async function composeIssuePacketTool(input: IssueInput): Promise<Record<string, unknown> & { evidence_matrix: EvidenceRow[]; counts: Record<string, number>; original_url: string }> {
   if (!input.topic?.trim()) throw new InputError("topic is required for compose_issue_packet");
   const limit = input.limit ?? 3;
-  const [law, gazette, stats, dataset] = await Promise.all([
+  const [law, gazette, stats, dataset, bill, lawmaking] = await Promise.all([
     safe("law", () => searchLawTool({ query: queryOf(input, "law_query"), limit })),
     safe("gazette", () => searchGazetteItemsTool({ query: queryOf(input, "gazette_query"), limit })),
     safe("stats", () => searchStatSeriesTool({ query: queryOf(input, "stat_query"), source: "all", limit })),
-    safe("dataset", () => searchPublicDatasetTool({ query: queryOf(input, "dataset_query"), limit }))
+    safe("dataset", () => searchPublicDatasetTool({ query: queryOf(input, "dataset_query"), limit })),
+    safe("bill", () => searchBillTool({ bill_name: queryOf(input, "bill_query"), limit })),
+    safe("lawmaking", () => searchLawmakingItemsTool({ category: "notice", query: queryOf(input, "lawmaking_query"), limit }))
   ]);
 
-  const sources = { law, gazette, stats, dataset };
+  const sources = { law, gazette, stats, dataset, bill, lawmaking };
   const packet = {
     source: "issue-composer",
     provider: "korean-government-api-bundle",
@@ -263,7 +292,9 @@ export async function renderIssueOnepagerTool(input: IssueInput) {
       `법령 근거 후보: ${top("legal basis")?.title ?? "확인 필요"}`,
       `공식 신호 후보: ${top("official notice")?.title ?? "확인 필요"}`,
       `통계 후보: ${top("background condition")?.title ?? "확인 필요"}`,
-      `데이터셋 후보: ${top("data asset")?.title ?? "확인 필요"}`
+      `데이터셋 후보: ${top("data asset")?.title ?? "확인 필요"}`,
+      `국회 의안 후보: ${top("legislative agenda")?.title ?? "확인 필요"}`,
+      `입법 pipeline 후보: ${top("lawmaking pipeline")?.title ?? "확인 필요"}`
     ],
     risks: matrix.map((row: EvidenceRow) => `${row.role}: ${row.caveat}`),
     next_actions: [
@@ -328,6 +359,8 @@ function buildGapAssessment(packet: Record<string, unknown>) {
   addGap(checks, "gazette", "관보/공식 신호", "warning", counts.gazette > 0, `${counts.gazette ?? 0} rows`, "기관명·정책명·근거법령명으로 관보 검색어를 좁힙니다.");
   addGap(checks, "stats", "통계 후보", "warning", counts.stats > 0, `${counts.stats ?? 0} rows`, "ECOS/KOSIS/R-ONE 등 직접 지표 후보를 보강합니다.");
   addGap(checks, "dataset", "공공데이터 후보", "info", counts.dataset > 0, `${counts.dataset ?? 0} rows`, "API 제공 여부와 갱신주기를 확인합니다.");
+  addGap(checks, "bill", "국회 의안 후보", "warning", counts.bill > 0, `${counts.bill ?? 0} rows`, "의안명/위원회/대수를 조정해 입법 agenda 신호를 확인합니다.");
+  addGap(checks, "lawmaking", "입법센터 pipeline", "warning", counts.lawmaking > 0, `${counts.lawmaking ?? 0} rows`, "입법예고/입법현황 category와 기관명을 조정합니다.");
   const gaps = checks.filter((c) => c.status === "gap");
   const weak = checks.filter((c) => c.status === "weak");
   const score = Math.max(0, 100 - gaps.length * 30 - weak.length * 12);
@@ -342,6 +375,8 @@ export async function renderIssueTimelineTool(input: IssueInput) {
   for (const item of sourceItems(packet, "gazette")) events.push({ date: dateOf(item), source: "mois-gazette", title: titleOf(item), note: "관보/공식 신호", original_url: String(item.original_url ?? "") });
   for (const item of sourceItems(packet, "stats")) events.push({ date: "undated", source: "stats", title: titleOf(item), note: "통계 후보", original_url: String(item.original_url ?? "") });
   for (const item of sourceItems(packet, "dataset")) events.push({ date: "undated", source: "data.go.kr", title: titleOf(item), note: "공공데이터 후보", original_url: String(item.original_url ?? "") });
+  for (const item of sourceItems(packet, "bill")) events.push({ date: dateOf(item), source: "open.assembly.go.kr", title: titleOf(item), note: "국회 의안 후보", original_url: String(item.original_url ?? "") });
+  for (const item of sourceItems(packet, "lawmaking")) events.push({ date: dateOf(item), source: "lawmaking.go.kr", title: titleOf(item), note: "입법센터 pipeline", original_url: String(item.original_url ?? "") });
   events.sort((a, b) => a.date.localeCompare(b.date));
   return {
     source: "issue-composer",
@@ -386,6 +421,8 @@ export async function routeIssueNextActionTool(input: IssueInput) {
     { id: "legal-deep-dive", label: "법령/조문 심화", score: 35 + (weakIds.has("law") ? 35 : 0) + (high === 0 ? 10 : 0), next: "법령 후보에서 조문·소관·권한 근거를 확인합니다." },
     { id: "official-signal-narrowing", label: "관보/공식신호 좁히기", score: 35 + (weakIds.has("gazette") ? 30 : 0) + (medium > 1 ? 10 : 0), next: "관보 검색어를 기관명·정책명·근거법령명으로 좁힙니다." },
     { id: "statistics-support", label: "통계 보강", score: 30 + (weakIds.has("stats") ? 30 : 0), next: "직접 지표와 배경 지표를 분리해 통계 후보를 보강합니다." },
+    { id: "assembly-watch", label: "국회 의안/상임위 추적", score: 32 + (weakIds.has("bill") ? 30 : 0), next: "의안명·위원회·대수를 조정해 관련 법안과 상임위 신호를 추적합니다." },
+    { id: "lawmaking-watch", label: "입법예고/입법현황 추적", score: 32 + (weakIds.has("lawmaking") ? 30 : 0), next: "국민참여입법센터 category를 조정해 제도화 pipeline을 확인합니다." },
     { id: "dataset-followup", label: "공공데이터 API 후속확인", score: 30 + (weakIds.has("dataset") ? 25 : 0), next: "데이터셋 API 제공 여부·갱신주기·원자료 다운로드 가능성을 확인합니다." }
   ].sort((a, b) => b.score - a.score);
   return {

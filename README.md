@@ -53,7 +53,7 @@ kgab run-resolved-bundle "2207018 법안 상태"
 | `compare_stat_series` | 두 통계 시계열을 같은 기간으로 정렬해 비교 | 불필요 |
 | `search_public_dataset` | 공공데이터포털 데이터셋 검색 | 불필요 |
 | `get_dataset_metadata` | 데이터셋 메타데이터 상세 조회 | 불필요 |
-| `compose_issue_packet` | 이슈별 법령·관보·통계·공공데이터 후보를 하나의 근거 packet으로 합성 | source별 키 필요 가능 |
+| `compose_issue_packet` | 이슈별 법령·관보·국회 의안·입법센터·통계·공공데이터 후보를 하나의 근거 packet으로 합성 | source별 키 필요 가능 |
 | `render_issue_onepager` | issue packet을 1쪽 보고서형 bottom line/facts/risks/actions로 렌더링 | source별 키 필요 가능 |
 | `render_issue_brief` | issue packet을 실무 브리핑 구조로 렌더링 | source별 키 필요 가능 |
 | `render_issue_evidence_matrix` | source별 근거 역할·강도·용도·주의점 행렬을 반환 | source별 키 필요 가능 |
@@ -115,16 +115,16 @@ kgab get-stat-series --source kosis --table DT_1IN1502 --start 2022 --end 2024
 KOSIS_API_KEY=your_key_here kgab get-stat-series --source kosis --table DT_1B040A3 --item T20 --obj-l1 36 --start 202401 --end 202403
 kgab search-public-dataset 주민등록 인구 --limit 5
 kgab get-dataset-metadata --dataset-id 15108065
-kgab compose-issue-packet --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
-kgab render-issue-onepager --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
-kgab render-issue-brief --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
-kgab render-issue-evidence-matrix --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
-kgab render-issue-timeline --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
-kgab check-issue-gaps --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
-kgab route-issue-next-action --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
-kgab render-issue-scenario-lab --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
-kgab build-issue-dossier --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
-kgab build-issue-dossier-markdown --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --limit 3
+kgab compose-issue-packet --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --bill-query 공급망 --lawmaking-query 공급망 --limit 3
+kgab render-issue-onepager --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --bill-query 공급망 --lawmaking-query 공급망 --limit 3
+kgab render-issue-brief --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --bill-query 공급망 --lawmaking-query 공급망 --limit 3
+kgab render-issue-evidence-matrix --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --bill-query 공급망 --lawmaking-query 공급망 --limit 3
+kgab render-issue-timeline --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --bill-query 공급망 --lawmaking-query 공급망 --limit 3
+kgab check-issue-gaps --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --bill-query 공급망 --lawmaking-query 공급망 --limit 3
+kgab route-issue-next-action --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --bill-query 공급망 --lawmaking-query 공급망 --limit 3
+kgab render-issue-scenario-lab --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --bill-query 공급망 --lawmaking-query 공급망 --limit 3
+kgab build-issue-dossier --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --bill-query 공급망 --lawmaking-query 공급망 --limit 3
+kgab build-issue-dossier-markdown --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --bill-query 공급망 --lawmaking-query 공급망 --limit 3
 ```
 
 ## 시작 순서
@@ -194,11 +194,11 @@ src/
 16. dataset detail metadata를 data.go.kr detail HTML이 아니라 official catalog JSON(`/catalog/{id}/*.json`) 우선 경로로 전환
 17. provider fetch 전반에 공통 timeout + retry 적용
 18. ECOS `search_stat_series`에 live metadata fallback 추가, curated catalog 밖의 월간 series도 검색 가능하게 확장
-19. `compose_issue_packet` / `render_issue_onepager` 추가: 법령·관보·통계·공공데이터 후보를 source-first 근거 packet과 1쪽 보고서 초안으로 합성
+19. `compose_issue_packet` / `render_issue_onepager` 추가: 법령·관보·국회 의안·입법센터·통계·공공데이터 후보를 source-first 근거 packet과 1쪽 보고서 초안으로 합성
 20. `render_issue_timeline` / `check_issue_gaps` / `route_issue_next_action` 추가: issue packet을 시간순 맥락, source gap, 다음 작업 경로로 확장
 21. `render_issue_scenario_lab` 추가: issue packet/gap/router를 행정 리스크, 예상질문, 실행 패키지, 반대논리로 합성
 22. `render_issue_brief` / `render_issue_evidence_matrix` 추가: demo의 brief/matrix 레이어까지 bundle 정식 실행 표면으로 승격
-23. `build_issue_dossier` 추가: issue intelligence 전체 체인을 packet/brief/onepager/timeline/matrix/gap/router/scenario/markdown dossier로 한 번에 묶음
+23. `build_issue_dossier` 추가: issue intelligence 전체 체인을 packet/brief/onepager/timeline/matrix/gap/router/scenario/markdown dossier로 한 번에 묶고 국회 의안·입법센터 source까지 포함
 24. CLI 편의 명령 `build-issue-dossier-markdown` 추가: JSON wrapper 없이 보고서 Markdown만 바로 출력
 
 현재 구조는 아래 3층을 기준으로 움직입니다.
