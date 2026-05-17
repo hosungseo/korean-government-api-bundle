@@ -156,6 +156,23 @@ export const issueTools = [
       required: ["topic"]
     }
   }
+  ,
+  {
+    name: "build_issue_dossier",
+    description: "issue intelligence 전체 체인(packet/brief/onepager/timeline/matrix/gap/router/scenario)을 한 번에 묶은 dossier를 생성합니다.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        topic: { type: "string", description: "이슈 주제" },
+        law_query: { type: "string", description: "법령 검색어. 기본값은 topic" },
+        gazette_query: { type: "string", description: "관보 검색어. 기본값은 topic" },
+        stat_query: { type: "string", description: "통계 검색어. 기본값은 topic" },
+        dataset_query: { type: "string", description: "공공데이터 검색어. 기본값은 topic" },
+        limit: { type: "number", description: "source별 최대 후보 수" }
+      },
+      required: ["topic"]
+    }
+  }
 ] as const;
 
 function queryOf(input: IssueInput, key: keyof Pick<IssueInput, "law_query" | "gazette_query" | "stat_query" | "dataset_query">): string {
@@ -545,5 +562,69 @@ export async function renderIssueBriefTool(input: IssueInput) {
     ],
     evidence_matrix: matrix,
     packet
+  };
+}
+
+
+export async function buildIssueDossierTool(input: IssueInput) {
+  const packet = await composeIssuePacketTool(input);
+  const gapAssessment = buildGapAssessment(packet);
+  const matrix = packet.evidence_matrix;
+  const timelineEvents: TimelineEvent[] = [];
+  for (const item of sourceItems(packet, "law")) timelineEvents.push({ date: dateOf(item), source: "law.go.kr", title: titleOf(item), note: "법령 후보", original_url: String(item.original_url ?? "") });
+  for (const item of sourceItems(packet, "gazette")) timelineEvents.push({ date: dateOf(item), source: "mois-gazette", title: titleOf(item), note: "관보/공식 신호", original_url: String(item.original_url ?? "") });
+  for (const item of sourceItems(packet, "stats")) timelineEvents.push({ date: "undated", source: "stats", title: titleOf(item), note: "통계 후보", original_url: String(item.original_url ?? "") });
+  for (const item of sourceItems(packet, "dataset")) timelineEvents.push({ date: "undated", source: "data.go.kr", title: titleOf(item), note: "공공데이터 후보", original_url: String(item.original_url ?? "") });
+  timelineEvents.sort((a, b) => a.date.localeCompare(b.date));
+  const router = await routeIssueNextActionTool(input);
+  const onepager = await renderIssueOnepagerTool(input);
+  const brief = await renderIssueBriefTool(input);
+  const scenario = await renderIssueScenarioLabTool(input);
+  const dossierMarkdown = [
+    `# Issue Dossier — ${input.topic}`,
+    ``,
+    `- Posture: ${gapAssessment.posture}`,
+    `- Score: ${gapAssessment.score}`,
+    `- Recommended route: ${router.recommendation?.id ?? "unknown"}`,
+    ``,
+    `## Bottom line`,
+    String(onepager.bottom_line ?? ""),
+    ``,
+    `## Key facts`,
+    ...((onepager.key_facts as string[] | undefined) ?? []).map((x) => `- ${x}`),
+    ``,
+    `## Evidence matrix`,
+    ...matrix.map((r) => `- **${r.role} / ${r.source} / ${r.strength}:** ${r.title} — ${r.caveat}`),
+    ``,
+    `## Timeline`,
+    ...timelineEvents.map((e) => `- **${e.date}** [${e.source}] ${e.title}`),
+    ``,
+    `## Scenario risks`,
+    ...((scenario.risks as Array<{ risk: string; mitigation: string }> | undefined) ?? []).map((r) => `- **${r.risk}:** ${r.mitigation}`),
+    ``,
+    `## Next actions`,
+    ...((onepager.next_actions as string[] | undefined) ?? []).map((x) => `- ${x}`)
+  ].join("\n");
+  return {
+    source: "issue-composer",
+    provider: "korean-government-api-bundle",
+    tool: "build_issue_dossier",
+    query: input,
+    identifier: `issue-dossier:${input.topic}`,
+    summary: `${input.topic} 이슈 dossier를 생성했습니다.`,
+    original_url: packet.original_url,
+    fetched_at: nowIso(),
+    posture: gapAssessment.posture,
+    score: gapAssessment.score,
+    recommendation: router.recommendation,
+    packet,
+    brief,
+    onepager,
+    timeline: { events: timelineEvents },
+    evidence_matrix: matrix,
+    gap: gapAssessment,
+    router,
+    scenario,
+    dossier_markdown: dossierMarkdown
   };
 }

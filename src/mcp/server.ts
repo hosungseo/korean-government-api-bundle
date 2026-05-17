@@ -8,7 +8,7 @@ import { getLawmakingItemDetailTool, lawmakingTools, searchLawmakingItemsTool } 
 import { gazetteTools, searchGazetteItemsTool } from "./tools/gazette.js";
 import { compareStatSeriesTool, getStatSeriesTool, searchStatSeriesTool, statTools } from "./tools/stats.js";
 import { datasetTools, getDatasetMetadataTool, searchPublicDatasetTool } from "./tools/dataset.js";
-import { checkIssueGapsTool, composeIssuePacketTool, issueTools, renderIssueBriefTool, renderIssueEvidenceMatrixTool, renderIssueOnepagerTool, renderIssueScenarioLabTool, renderIssueTimelineTool, routeIssueNextActionTool } from "./tools/issue.js";
+import { buildIssueDossierTool, checkIssueGapsTool, composeIssuePacketTool, issueTools, renderIssueBriefTool, renderIssueEvidenceMatrixTool, renderIssueOnepagerTool, renderIssueScenarioLabTool, renderIssueTimelineTool, routeIssueNextActionTool } from "./tools/issue.js";
 
 const TOOL_TEXT_MIME = "application/json";
 
@@ -71,6 +71,8 @@ export async function runTool(name: string, input: unknown): Promise<unknown> {
       return routeIssueNextActionTool(input as { topic: string; law_query?: string; gazette_query?: string; stat_query?: string; dataset_query?: string; limit?: number });
     case "render_issue_scenario_lab":
       return renderIssueScenarioLabTool(input as { topic: string; law_query?: string; gazette_query?: string; stat_query?: string; dataset_query?: string; limit?: number });
+    case "build_issue_dossier":
+      return buildIssueDossierTool(input as { topic: string; law_query?: string; gazette_query?: string; stat_query?: string; dataset_query?: string; limit?: number });
     default:
       throw new Error(`Unsupported tool: ${name}`);
   }
