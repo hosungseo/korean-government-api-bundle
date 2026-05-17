@@ -29,16 +29,16 @@ function printUsage(): void {
   kgab compare-stat-series --id-a <IDENTIFIER> --id-b <IDENTIFIER> [--label-a <이름>] [--label-b <이름>] [--org-a <ORG_ID>] [--org-b <ORG_ID>] --start YYYYMM --end YYYYMM
   kgab search-public-dataset <query> [--limit N]
   kgab get-dataset-metadata --dataset-id <ID>
-  kgab compose-issue-packet --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--bill-query <검색어>] [--lawmaking-query <검색어>] [--policy-query <검색어>] [--limit N]
-  kgab render-issue-onepager --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--bill-query <검색어>] [--lawmaking-query <검색어>] [--policy-query <검색어>] [--limit N]
-  kgab render-issue-brief --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--bill-query <검색어>] [--lawmaking-query <검색어>] [--policy-query <검색어>] [--limit N]
-  kgab render-issue-evidence-matrix --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--bill-query <검색어>] [--lawmaking-query <검색어>] [--policy-query <검색어>] [--limit N]
-  kgab render-issue-timeline --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--bill-query <검색어>] [--lawmaking-query <검색어>] [--policy-query <검색어>] [--limit N]
-  kgab check-issue-gaps --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--bill-query <검색어>] [--lawmaking-query <검색어>] [--policy-query <검색어>] [--limit N]
-  kgab route-issue-next-action --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--bill-query <검색어>] [--lawmaking-query <검색어>] [--policy-query <검색어>] [--limit N]
-  kgab render-issue-scenario-lab --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--bill-query <검색어>] [--lawmaking-query <검색어>] [--policy-query <검색어>] [--limit N]
-  kgab build-issue-dossier --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--bill-query <검색어>] [--lawmaking-query <검색어>] [--policy-query <검색어>] [--limit N]
-  kgab build-issue-dossier-markdown --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--bill-query <검색어>] [--lawmaking-query <검색어>] [--policy-query <검색어>] [--limit N]
+  kgab compose-issue-packet --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--bill-query <검색어>] [--lawmaking-query <검색어>] [--lawmaking-category <category>] [--policy-query <검색어>] [--limit N]
+  kgab render-issue-onepager --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--bill-query <검색어>] [--lawmaking-query <검색어>] [--lawmaking-category <category>] [--policy-query <검색어>] [--limit N]
+  kgab render-issue-brief --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--bill-query <검색어>] [--lawmaking-query <검색어>] [--lawmaking-category <category>] [--policy-query <검색어>] [--limit N]
+  kgab render-issue-evidence-matrix --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--bill-query <검색어>] [--lawmaking-query <검색어>] [--lawmaking-category <category>] [--policy-query <검색어>] [--limit N]
+  kgab render-issue-timeline --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--bill-query <검색어>] [--lawmaking-query <검색어>] [--lawmaking-category <category>] [--policy-query <검색어>] [--limit N]
+  kgab check-issue-gaps --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--bill-query <검색어>] [--lawmaking-query <검색어>] [--lawmaking-category <category>] [--policy-query <검색어>] [--limit N]
+  kgab route-issue-next-action --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--bill-query <검색어>] [--lawmaking-query <검색어>] [--lawmaking-category <category>] [--policy-query <검색어>] [--limit N]
+  kgab render-issue-scenario-lab --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--bill-query <검색어>] [--lawmaking-query <검색어>] [--lawmaking-category <category>] [--policy-query <검색어>] [--limit N]
+  kgab build-issue-dossier --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--bill-query <검색어>] [--lawmaking-query <검색어>] [--lawmaking-category <category>] [--policy-query <검색어>] [--limit N]
+  kgab build-issue-dossier-markdown --topic <주제> [--law-query <검색어>] [--gazette-query <검색어>] [--stat-query <검색어>] [--dataset-query <검색어>] [--bill-query <검색어>] [--lawmaking-query <검색어>] [--lawmaking-category <category>] [--policy-query <검색어>] [--limit N]
   kgab mcp --list-tools
   kgab mcp run <tool_name> '<json>'`);
 }
@@ -288,6 +288,7 @@ async function main(): Promise<void> {
       dataset_query: parseOption(rest, "--dataset-query"),
       bill_query: parseOption(rest, "--bill-query"),
       lawmaking_query: parseOption(rest, "--lawmaking-query"),
+      lawmaking_category: parseOption(rest, "--lawmaking-category") as any,
       policy_query: parseOption(rest, "--policy-query"),
       limit: parseLimit(rest)
     });
@@ -304,6 +305,7 @@ async function main(): Promise<void> {
       dataset_query: parseOption(rest, "--dataset-query"),
       bill_query: parseOption(rest, "--bill-query"),
       lawmaking_query: parseOption(rest, "--lawmaking-query"),
+      lawmaking_category: parseOption(rest, "--lawmaking-category") as any,
       policy_query: parseOption(rest, "--policy-query"),
       limit: parseLimit(rest)
     });
@@ -312,49 +314,49 @@ async function main(): Promise<void> {
   }
 
   if (command === "render-issue-brief" || command === "render_issue_brief") {
-    const result = await renderIssueBriefTool({ topic: parseOption(rest, "--topic") ?? rest.filter((arg) => !arg.startsWith("--")).join(" ").trim(), law_query: parseOption(rest, "--law-query"), gazette_query: parseOption(rest, "--gazette-query"), stat_query: parseOption(rest, "--stat-query"), dataset_query: parseOption(rest, "--dataset-query"), bill_query: parseOption(rest, "--bill-query"), lawmaking_query: parseOption(rest, "--lawmaking-query"), policy_query: parseOption(rest, "--policy-query"), limit: parseLimit(rest) });
+    const result = await renderIssueBriefTool({ topic: parseOption(rest, "--topic") ?? rest.filter((arg) => !arg.startsWith("--")).join(" ").trim(), law_query: parseOption(rest, "--law-query"), gazette_query: parseOption(rest, "--gazette-query"), stat_query: parseOption(rest, "--stat-query"), dataset_query: parseOption(rest, "--dataset-query"), bill_query: parseOption(rest, "--bill-query"), lawmaking_query: parseOption(rest, "--lawmaking-query"), lawmaking_category: parseOption(rest, "--lawmaking-category") as any, policy_query: parseOption(rest, "--policy-query"), limit: parseLimit(rest) });
     console.log(JSON.stringify(result, null, 2));
     return;
   }
 
   if (command === "render-issue-evidence-matrix" || command === "render_issue_evidence_matrix") {
-    const result = await renderIssueEvidenceMatrixTool({ topic: parseOption(rest, "--topic") ?? rest.filter((arg) => !arg.startsWith("--")).join(" ").trim(), law_query: parseOption(rest, "--law-query"), gazette_query: parseOption(rest, "--gazette-query"), stat_query: parseOption(rest, "--stat-query"), dataset_query: parseOption(rest, "--dataset-query"), bill_query: parseOption(rest, "--bill-query"), lawmaking_query: parseOption(rest, "--lawmaking-query"), policy_query: parseOption(rest, "--policy-query"), limit: parseLimit(rest) });
+    const result = await renderIssueEvidenceMatrixTool({ topic: parseOption(rest, "--topic") ?? rest.filter((arg) => !arg.startsWith("--")).join(" ").trim(), law_query: parseOption(rest, "--law-query"), gazette_query: parseOption(rest, "--gazette-query"), stat_query: parseOption(rest, "--stat-query"), dataset_query: parseOption(rest, "--dataset-query"), bill_query: parseOption(rest, "--bill-query"), lawmaking_query: parseOption(rest, "--lawmaking-query"), lawmaking_category: parseOption(rest, "--lawmaking-category") as any, policy_query: parseOption(rest, "--policy-query"), limit: parseLimit(rest) });
     console.log(JSON.stringify(result, null, 2));
     return;
   }
 
   if (command === "render-issue-timeline" || command === "render_issue_timeline") {
-    const result = await renderIssueTimelineTool({ topic: parseOption(rest, "--topic") ?? rest.filter((arg) => !arg.startsWith("--")).join(" ").trim(), law_query: parseOption(rest, "--law-query"), gazette_query: parseOption(rest, "--gazette-query"), stat_query: parseOption(rest, "--stat-query"), dataset_query: parseOption(rest, "--dataset-query"), bill_query: parseOption(rest, "--bill-query"), lawmaking_query: parseOption(rest, "--lawmaking-query"), policy_query: parseOption(rest, "--policy-query"), limit: parseLimit(rest) });
+    const result = await renderIssueTimelineTool({ topic: parseOption(rest, "--topic") ?? rest.filter((arg) => !arg.startsWith("--")).join(" ").trim(), law_query: parseOption(rest, "--law-query"), gazette_query: parseOption(rest, "--gazette-query"), stat_query: parseOption(rest, "--stat-query"), dataset_query: parseOption(rest, "--dataset-query"), bill_query: parseOption(rest, "--bill-query"), lawmaking_query: parseOption(rest, "--lawmaking-query"), lawmaking_category: parseOption(rest, "--lawmaking-category") as any, policy_query: parseOption(rest, "--policy-query"), limit: parseLimit(rest) });
     console.log(JSON.stringify(result, null, 2));
     return;
   }
 
   if (command === "check-issue-gaps" || command === "check_issue_gaps") {
-    const result = await checkIssueGapsTool({ topic: parseOption(rest, "--topic") ?? rest.filter((arg) => !arg.startsWith("--")).join(" ").trim(), law_query: parseOption(rest, "--law-query"), gazette_query: parseOption(rest, "--gazette-query"), stat_query: parseOption(rest, "--stat-query"), dataset_query: parseOption(rest, "--dataset-query"), bill_query: parseOption(rest, "--bill-query"), lawmaking_query: parseOption(rest, "--lawmaking-query"), policy_query: parseOption(rest, "--policy-query"), limit: parseLimit(rest) });
+    const result = await checkIssueGapsTool({ topic: parseOption(rest, "--topic") ?? rest.filter((arg) => !arg.startsWith("--")).join(" ").trim(), law_query: parseOption(rest, "--law-query"), gazette_query: parseOption(rest, "--gazette-query"), stat_query: parseOption(rest, "--stat-query"), dataset_query: parseOption(rest, "--dataset-query"), bill_query: parseOption(rest, "--bill-query"), lawmaking_query: parseOption(rest, "--lawmaking-query"), lawmaking_category: parseOption(rest, "--lawmaking-category") as any, policy_query: parseOption(rest, "--policy-query"), limit: parseLimit(rest) });
     console.log(JSON.stringify(result, null, 2));
     return;
   }
 
   if (command === "route-issue-next-action" || command === "route_issue_next_action") {
-    const result = await routeIssueNextActionTool({ topic: parseOption(rest, "--topic") ?? rest.filter((arg) => !arg.startsWith("--")).join(" ").trim(), law_query: parseOption(rest, "--law-query"), gazette_query: parseOption(rest, "--gazette-query"), stat_query: parseOption(rest, "--stat-query"), dataset_query: parseOption(rest, "--dataset-query"), bill_query: parseOption(rest, "--bill-query"), lawmaking_query: parseOption(rest, "--lawmaking-query"), policy_query: parseOption(rest, "--policy-query"), limit: parseLimit(rest) });
+    const result = await routeIssueNextActionTool({ topic: parseOption(rest, "--topic") ?? rest.filter((arg) => !arg.startsWith("--")).join(" ").trim(), law_query: parseOption(rest, "--law-query"), gazette_query: parseOption(rest, "--gazette-query"), stat_query: parseOption(rest, "--stat-query"), dataset_query: parseOption(rest, "--dataset-query"), bill_query: parseOption(rest, "--bill-query"), lawmaking_query: parseOption(rest, "--lawmaking-query"), lawmaking_category: parseOption(rest, "--lawmaking-category") as any, policy_query: parseOption(rest, "--policy-query"), limit: parseLimit(rest) });
     console.log(JSON.stringify(result, null, 2));
     return;
   }
 
   if (command === "render-issue-scenario-lab" || command === "render_issue_scenario_lab") {
-    const result = await renderIssueScenarioLabTool({ topic: parseOption(rest, "--topic") ?? rest.filter((arg) => !arg.startsWith("--")).join(" ").trim(), law_query: parseOption(rest, "--law-query"), gazette_query: parseOption(rest, "--gazette-query"), stat_query: parseOption(rest, "--stat-query"), dataset_query: parseOption(rest, "--dataset-query"), bill_query: parseOption(rest, "--bill-query"), lawmaking_query: parseOption(rest, "--lawmaking-query"), policy_query: parseOption(rest, "--policy-query"), limit: parseLimit(rest) });
+    const result = await renderIssueScenarioLabTool({ topic: parseOption(rest, "--topic") ?? rest.filter((arg) => !arg.startsWith("--")).join(" ").trim(), law_query: parseOption(rest, "--law-query"), gazette_query: parseOption(rest, "--gazette-query"), stat_query: parseOption(rest, "--stat-query"), dataset_query: parseOption(rest, "--dataset-query"), bill_query: parseOption(rest, "--bill-query"), lawmaking_query: parseOption(rest, "--lawmaking-query"), lawmaking_category: parseOption(rest, "--lawmaking-category") as any, policy_query: parseOption(rest, "--policy-query"), limit: parseLimit(rest) });
     console.log(JSON.stringify(result, null, 2));
     return;
   }
 
   if (command === "build-issue-dossier" || command === "build_issue_dossier") {
-    const result = await buildIssueDossierTool({ topic: parseOption(rest, "--topic") ?? rest.filter((arg) => !arg.startsWith("--")).join(" ").trim(), law_query: parseOption(rest, "--law-query"), gazette_query: parseOption(rest, "--gazette-query"), stat_query: parseOption(rest, "--stat-query"), dataset_query: parseOption(rest, "--dataset-query"), bill_query: parseOption(rest, "--bill-query"), lawmaking_query: parseOption(rest, "--lawmaking-query"), policy_query: parseOption(rest, "--policy-query"), limit: parseLimit(rest) });
+    const result = await buildIssueDossierTool({ topic: parseOption(rest, "--topic") ?? rest.filter((arg) => !arg.startsWith("--")).join(" ").trim(), law_query: parseOption(rest, "--law-query"), gazette_query: parseOption(rest, "--gazette-query"), stat_query: parseOption(rest, "--stat-query"), dataset_query: parseOption(rest, "--dataset-query"), bill_query: parseOption(rest, "--bill-query"), lawmaking_query: parseOption(rest, "--lawmaking-query"), lawmaking_category: parseOption(rest, "--lawmaking-category") as any, policy_query: parseOption(rest, "--policy-query"), limit: parseLimit(rest) });
     console.log(JSON.stringify(result, null, 2));
     return;
   }
 
   if (command === "build-issue-dossier-markdown" || command === "build_issue_dossier_markdown") {
-    const result = await buildIssueDossierTool({ topic: parseOption(rest, "--topic") ?? rest.filter((arg) => !arg.startsWith("--")).join(" ").trim(), law_query: parseOption(rest, "--law-query"), gazette_query: parseOption(rest, "--gazette-query"), stat_query: parseOption(rest, "--stat-query"), dataset_query: parseOption(rest, "--dataset-query"), bill_query: parseOption(rest, "--bill-query"), lawmaking_query: parseOption(rest, "--lawmaking-query"), policy_query: parseOption(rest, "--policy-query"), limit: parseLimit(rest) });
+    const result = await buildIssueDossierTool({ topic: parseOption(rest, "--topic") ?? rest.filter((arg) => !arg.startsWith("--")).join(" ").trim(), law_query: parseOption(rest, "--law-query"), gazette_query: parseOption(rest, "--gazette-query"), stat_query: parseOption(rest, "--stat-query"), dataset_query: parseOption(rest, "--dataset-query"), bill_query: parseOption(rest, "--bill-query"), lawmaking_query: parseOption(rest, "--lawmaking-query"), lawmaking_category: parseOption(rest, "--lawmaking-category") as any, policy_query: parseOption(rest, "--policy-query"), limit: parseLimit(rest) });
     console.log(String(result.dossier_markdown ?? ""));
     return;
   }

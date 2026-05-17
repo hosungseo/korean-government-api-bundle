@@ -124,7 +124,7 @@ kgab check-issue-gaps --topic 공급망 --law-query 정부조직법 --gazette-qu
 kgab route-issue-next-action --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --bill-query 공급망 --lawmaking-query 공급망 --policy-query 조달청 --limit 3
 kgab render-issue-scenario-lab --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --bill-query 공급망 --lawmaking-query 공급망 --policy-query 조달청 --limit 3
 kgab build-issue-dossier --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --bill-query 공급망 --lawmaking-query 공급망 --policy-query 조달청 --limit 3
-kgab build-issue-dossier-markdown --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --bill-query 공급망 --lawmaking-query 공급망 --policy-query 조달청 --limit 3
+kgab build-issue-dossier-markdown --topic 공급망 --law-query 정부조직법 --gazette-query 고시 --stat-query 기준금리 --dataset-query 인구 --bill-query 공급망 --lawmaking-query 공급망 --lawmaking-category notice --policy-query 조달청 --limit 3
 ```
 
 ## 시작 순서
@@ -200,6 +200,7 @@ src/
 22. `render_issue_brief` / `render_issue_evidence_matrix` 추가: demo의 brief/matrix 레이어까지 bundle 정식 실행 표면으로 승격
 23. `build_issue_dossier` 추가: issue intelligence 전체 체인을 packet/brief/onepager/timeline/matrix/gap/router/scenario/markdown dossier로 한 번에 묶고 정책브리핑·국회 의안·입법센터 source까지 포함
 24. CLI 편의 명령 `build-issue-dossier-markdown` 추가: JSON wrapper 없이 보고서 Markdown만 바로 출력
+25. issue dossier source gap 진단 개선: 실패 source는 `source_gaps`와 Markdown `## Source gaps`에 원인과 다음 행동을 표시, `--lawmaking-category` 입력 지원
 
 현재 구조는 아래 3층을 기준으로 움직입니다.
 1. raw provider adapters
